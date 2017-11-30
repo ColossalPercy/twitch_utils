@@ -1,0 +1,25 @@
+{
+  "content_scripts": [
+    {
+      "js": [
+        "inject.js"
+      ],
+      "matches": [
+        "*://*.twitch.tv/*"
+      ],
+      "run_at": "document_end"
+    }
+  ],
+  "description": "Twitch Mod Tools.",
+  "icons": {
+    "128": "icon128.png",
+    "48": "icon48.png",
+    "16": "icon16.png"
+  },
+  "manifest_version": 2,
+  "name": "Twitch Mod Tools",
+  "permissions": [
+    "*://*.twitch.tv/*"
+  ],
+  "version": "0.1"
+}
