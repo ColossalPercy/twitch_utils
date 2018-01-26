@@ -1,3 +1,8 @@
+var jqScript = document.createElement('script');
+jqScript.type = 'text/javascript';
+jqScript.src = 'https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js';
+document.head.append(jqScript);
+
 var src;
 
 if (localStorage.tmtDev == 'true'){

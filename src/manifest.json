@@ -19,7 +19,8 @@
   "manifest_version": 2,
   "name": "Twitch Mod Tools",
   "permissions": [
-    "*://*.twitch.tv/*"
+    "*://*.twitch.tv/*",
+    "*://*.rawgit.com/*"
   ],
   "version": "0.1"
 }
