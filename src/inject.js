@@ -10,4 +10,4 @@ if (localStorage.tmtDev == 'true'){
 var script = document.createElement('script');
 script.type = 'text/javascript';
 script.src = src;
-document.body.append(script);
+document.head.append(script);

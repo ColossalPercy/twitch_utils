@@ -22,7 +22,7 @@ var config = {
 var chatObserver = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
         var modClass = document.querySelector('.chat-room__container');
-    	console.log(findReact(modClass));
+    	console.log(findReact(modClass).props.children._owner._instance.props.isCurrentUserModerator);
     	if (findReact(modClass).props.children._owner._instance.props.isCurrentUserModerator){
             mutation.addedNodes.forEach(function(addedNode) {
                 if (addedNode.nodeName == 'DIV') {
@@ -39,9 +39,8 @@ var chatObserver = new MutationObserver(function(mutations) {
 var chatLoaded = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
         var chatSelector = document.querySelector('.chat-list');
-        if (chatSelector.length > 0) {
-            var target = chatSelector[0];
-            chatObserver.observe(target, config);
+        if (chatSelector) {
+            chatObserver.observe(chatSelector, config);
         }
     });
 });
