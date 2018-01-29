@@ -22,11 +22,12 @@ var config = {
     subtree: true
 };
 
+var chatRoom;
+
 //Mutation observer for each chat message
 var chatObserver = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
-        var modClass = document.querySelector('.chat-room__container');
-    	if (findReact(modClass).props.children._owner._instance.props.isCurrentUserModerator){
+    	if (chatRoom.children._owner._instance.props.isCurrentUserModerator){
             mutation.addedNodes.forEach(function(addedNode) {
                 if (addedNode.nodeName == 'DIV') {
                     if (addedNode.classList.contains('chat-line__message')) {
@@ -41,60 +42,38 @@ var chatObserver = new MutationObserver(function(mutations) {
 //Mutation observer for chat loading
 var chatLoaded = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
-        var chatSelector = document.querySelector('.chat-list');
+        var chatSelector = document.querySelector('.chat-room__container');
         if (chatSelector) {
+            chatRoom = findReact(chatSelector).props;
             chatObserver.observe(chatSelector, config);
         }
     });
 });
 chatLoaded.observe(document.body, config);
 
-function doEvent(obj, type) {
-    /* Created by David@Refoua.me */
-    var event = new Event(type, {
-        target: obj,
-        bubbles: true
-    });
-    return obj ? obj.dispatchEvent(event) : false;
-}
-
-function message(txt) {
-    var el = document.querySelectorAll('[data-test-selector="chat-input"]')[0];
-    el.value = txt;
-    doEvent(el, 'input');
-    send();
-}
-
 function purge() {
-    var name = getUserName(this);
-    message('/timeout ' + name + ' 1');
+    var name = getUserName(this.parentElement.parentElement);
+    send('/timeout ' + name + ' 1');
 }
 
-function send() {
-    document.querySelectorAll('[data-test-selector="chat-send-button"]')[0].click();
+function send(m) {
+    findReact(document.querySelector('.chat-room__container').children[0]).props.children[1].props.sendMessage(m);
 }
 
 function addButton(el){
-    // var btn = document.createElement('span');
-    // btn.innerHTML = htmlStruc;
-    el.querySelector('[data-a-target="chat-timeout-button"]').insertAdjacentHTML('afterend', htmlStruc);
+    //el.querySelector('[data-a-target="chat-timeout-button"]').insertAdjacentHTML('afterend', htmlStruc);
+    el.children[0].children[1].insertAdjacentHTML('afterend', htmlStruc);
     var btn = el.querySelector('[data-a-target="chat-purge-button"]');
     btn.addEventListener('click', purge);
 }
 
 function getUserName(el){
     var name;
-    if (el.parentElement.parentElement.querySelector('.chat-author__intl-login')) {
-        name = el.parentElement.parentElement.querySelector('.chat-author__intl-login').innerHTML;
-        name = name.substr(2, name.length - 3);
-    } else {
-        name = el.parentElement.parentElement.querySelector('.chat-author__display-name').innerHTML;
-        name = name.replace(/<!--(.*?)-->/gm, "");
-    }
+    name = findReact(el).props.message.user.userLogin;
     return name;
 }
 
-window.findReact = function(el) {
+function findReact(el) {
     for (var key in el) {
         if (key.startsWith("__reactInternalInstance$")) {
             var compInternals = el[key]._currentElement;
@@ -104,4 +83,4 @@ window.findReact = function(el) {
         }
     }
     return null;
-};
+}
