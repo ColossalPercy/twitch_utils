@@ -18,24 +18,27 @@ var config = {
     subtree: true
 };
 
-
 //Mutation observer for each chat message
 var chatObserver = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
-        mutation.addedNodes.forEach(function(addedNode) {
-            if (addedNode.nodeName == 'DIV') {
-                if (addedNode.classList.contains('chat-line__message')) {
-                    addButton(addedNode);
+        var modClass = document.querySelector('.chat-room__container');
+    	console.log(findReact(modClass));
+    	if (findReact(modClass).props.children._owner._instance.props.isCurrentUserModerator){
+            mutation.addedNodes.forEach(function(addedNode) {
+                if (addedNode.nodeName == 'DIV') {
+                    if (addedNode.classList.contains('chat-line__message')) {
+                        addButton(addedNode);
+                    }
                 }
-            }
-        });
+            });
+        }
     });
 });
 
 //Mutation observer for chat loading
 var chatLoaded = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
-        var chatSelector = $(".chat-list");
+        var chatSelector = document.querySelector('.chat-list');
         if (chatSelector.length > 0) {
             var target = chatSelector[0];
             chatObserver.observe(target, config);
@@ -61,7 +64,7 @@ function message(txt) {
 }
 
 function purge() {
-    var name = this.parentElement.parentElement.querySelector('[data-test-selector="message-username"]').innerHTML;
+    var name = getUserName(this);
     message('/timeout ' + name + ' 1');
 }
 
@@ -76,3 +79,27 @@ function addButton(el){
     var btn = el.querySelector('[data-a-target="chat-purge-button"]');
     btn.addEventListener('click', purge);
 }
+
+function getUserName(el){
+    var name;
+    if (el.parentElement.parentElement.querySelector('.chat-author__intl-login')) {
+        name = el.parentElement.parentElement.querySelector('.chat-author__intl-login').innerHTML;
+        name = name.substr(2, name.length - 3);
+    } else {
+        name = el.parentElement.parentElement.querySelector('.chat-author__display-name').innerHTML;
+        name = name.replace(/<!--(.*?)-->/gm, "");
+    }
+    return name;
+}
+
+window.findReact = function(el) {
+    for (var key in el) {
+        if (key.startsWith("__reactInternalInstance$")) {
+            var compInternals = el[key]._currentElement;
+            var compWrapper = compInternals._owner;
+            var comp = compWrapper._instance;
+            return comp;
+        }
+    }
+    return null;
+};
