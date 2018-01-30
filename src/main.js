@@ -61,8 +61,7 @@ function send(m) {
 }
 
 function addButton(el){
-    //el.querySelector('[data-a-target="chat-timeout-button"]').insertAdjacentHTML('afterend', htmlStruc);
-    el.children[0].children[1].insertAdjacentHTML('afterend', htmlStruc);
+    el.querySelector('[data-a-target="chat-timeout-button"]').insertAdjacentHTML('afterend', htmlStruc);
     var btn = el.querySelector('[data-a-target="chat-purge-button"]');
     btn.addEventListener('click', purge);
 }
