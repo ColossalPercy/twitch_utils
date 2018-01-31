@@ -15,6 +15,52 @@ const htmlStruc = `<button class="mod-icon" data-a-target="chat-purge-button">
     </div>
 </button>`;
 
+const modCard = `
+<div class="tw-c-background-alt-2 tw-border-t tw-full-width tw-flex tw-justify-content-between tmt-tools">
+    <div class="tw-inline-flex tw-flex-row">
+        <div class="tw-inline-flex">
+            <button class="tw-button-icon">
+                <span class="tw-button__text tmt-timeout" data-tmt-timeout="1">Purge</span>
+            </button>
+        </div>
+    </div>
+    <div class="tw-inline-flex tw-flex-row">
+        <div class="tw-inline-flex">
+            <button class="tw-button-icon tmt-timeout" data-tmt-timeout="300">
+                <span class="tw-button__text">5m</span>
+            </button>
+            <button class="tw-button-icon tmt-timeout" data-tmt-timeout="600">
+                <span class="tw-button__text">10m</span>
+            </button>
+            <button class="tw-button-icon tmt-timeout" data-tmt-timeout="3600">
+                <span class="tw-button__text">1h</span>
+            </button>
+            <button class="tw-button-icon tmt-timeout" data-tmt-timeout="86400">
+                <span class="tw-button__text">1d</span>
+            </button>
+            <button class="tw-button-icon tmt-timeout" data-tmt-timeout="604800">
+                <span class="tw-button__text">1w</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="tw-c-background tw-full-width tw-flex">
+    <div class="tw-inline-flex tw-flex-row">
+        <div class="tw-inline-flex tw-pd-1">
+            <select class="tmt-ban-reason">
+                <option value="">Select a Ban Reason</option>
+                <option value="One-Man Spam">1) One-Man Spam</option>
+                <option value="Posting Bad Links">2) Posting Bad Links</option>
+                <option value="Ban Evasion">3) Ban Evasion</option>
+                <option value="Threats / Personal Info">4) Threats / Personal Info</option>
+                <option value="Hate / Harassment">5) Hate / Harassment</option>
+                <option value="Ignoring Broadcaster / Moderators">6) Ignoring Broadcaster / Moderators</option>
+            </select>
+        </div>
+    </div>
+</div>`;
+
 var config = {
     attributes: false,
     childList: true,
@@ -27,11 +73,13 @@ var chatRoom;
 //Mutation observer for each chat message
 var chatObserver = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
-    	if (chatRoom.children._owner._instance.props.isCurrentUserModerator){
+        if (chatRoom.children._owner._instance.props.isCurrentUserModerator) {
             mutation.addedNodes.forEach(function(addedNode) {
                 if (addedNode.nodeName == 'DIV') {
                     if (addedNode.classList.contains('chat-line__message')) {
                         addButton(addedNode);
+                    } else if (addedNode.classList.contains('viewer-card-layer')) {
+                        modCardReady();
                     }
                 }
             });
@@ -51,22 +99,48 @@ var chatLoaded = new MutationObserver(function(mutations) {
 });
 chatLoaded.observe(document.body, config);
 
-function purge() {
+function chatPurge() {
     var name = getUserName(this.parentElement.parentElement);
     send('/timeout ' + name + ' 1');
+}
+
+function cardTimeout() {
+    var name = findReact(document.querySelector('.viewer-card-layer')).props.children.props.targetLogin;
+    var time = this.getAttribute('data-tmt-timeout');
+    var reason = document.querySelector('.tmt-ban-reason').value;
+    send('/timeout ' + name + ' ' + time + ' ' + reason);
 }
 
 function send(m) {
     findReact(document.querySelector('.chat-room__container').children[0]).props.children[1].props.sendMessage(m);
 }
 
-function addButton(el){
+function addButton(el) {
     el.querySelector('[data-a-target="chat-timeout-button"]').insertAdjacentHTML('afterend', htmlStruc);
     var btn = el.querySelector('[data-a-target="chat-purge-button"]');
-    btn.addEventListener('click', purge);
+    btn.addEventListener('click', chatPurge);
 }
 
-function getUserName(el){
+function modCardReady() {
+    if (document.querySelectorAll('.viewer-card').length == 0) {
+        window.requestAnimationFrame(modCardReady);
+    } else {
+        addModCard();
+    }
+}
+
+function addModCard() {
+    document.querySelector('.viewer-card__actions').insertAdjacentHTML('beforeend', modCard);
+    if (document.querySelectorAll('.tmt-tools').length == 0) {
+        modCardReady();
+    }
+    var timeouts = document.getElementsByClassName('tmt-timeout');
+    for (var i = 0; i < timeouts.length; i++){
+        timeouts[i].addEventListener('click', cardTimeout);
+    }
+}
+
+function getUserName(el) {
     var name;
     name = findReact(el).props.message.user.userLogin;
     return name;
