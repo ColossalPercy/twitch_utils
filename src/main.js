@@ -64,6 +64,8 @@ const modCard = `
     </div>
 </div>`;
 
+const profileAge = '<p style="color:white;text-align:left;" id="viewer-card__profile-age"></p>';
+
 var config = {
     attributes: false,
     childList: true,
@@ -132,13 +134,27 @@ function modCardReady() {
     }
 }
 
+function createdDate(name) {
+    var Httpreq = new XMLHttpRequest();
+    var url = 'https://api.twitch.tv/kraken/users/' + name + '?client_id=5ojgte4x1dp72yumoc8fp9xp44nhdj';
+    Httpreq.open("GET", url, false);
+    Httpreq.send(null);
+    var data = JSON.parse(Httpreq.responseText);
+    var d = new Date(data.created_at);
+    // return d;
+    return d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear();
+}
+
 function addModCard() {
     document.querySelector('.viewer-card__actions').insertAdjacentHTML('beforeend', modCard);
     if (document.querySelectorAll('.tmt-tools').length == 0) {
         modCardReady();
     }
+    document.querySelector('.viewer-card__display-name').insertAdjacentHTML('beforeend', profileAge);
+    var login = findReact(document.querySelector('.viewer-card-layer')).props.children.props.targetLogin;
+    document.getElementById('viewer-card__profile-age').innerHTML = '(' + createdDate(login) + ')';
     var timeouts = document.getElementsByClassName('tmt-timeout');
-    for (var i = 0; i < timeouts.length; i++){
+    for (var i = 0; i < timeouts.length; i++) {
         timeouts[i].addEventListener('click', cardTimeout);
     }
 }
