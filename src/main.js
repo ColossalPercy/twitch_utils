@@ -35,6 +35,9 @@ const modCard = `
             <button class="tw-button-icon tmt-timeout" data-tmt-timeout="3600">
                 <span class="tw-button__text">1h</span>
             </button>
+            <button class="tw-button-icon tmt-timeout" data-tmt-timeout="43200">
+                <span class="tw-button__text">12h</span>
+            </button>
             <button class="tw-button-icon tmt-timeout" data-tmt-timeout="86400">
                 <span class="tw-button__text">1d</span>
             </button>
