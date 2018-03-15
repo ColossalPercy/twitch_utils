@@ -90,10 +90,13 @@ var chatObserver = new MutationObserver(function(mutations) {
                             addButton(addedNode);
                         }
                     }
+                    // TODO not on own viewer card
                     if (addedNode.classList.contains('viewer-card-layer__draggable')) {
-                        cardReady(function() {
-                            addModCard();
-                        });
+                        var name = findReact(document.querySelector('.viewer-card-layer')).return.memoizedProps.viewerCardOptions.targetLogin;
+                        if (name != chatRoom.currentUserLogin)
+                            cardReady(function() {
+                                addModCard();
+                            });
                     }
                 }
                 if (addedNode.classList.contains('viewer-card-layer__draggable')) {
@@ -106,7 +109,7 @@ var chatObserver = new MutationObserver(function(mutations) {
                         var message = '';
                         var messageArr = findReact(addedNode).memoizedProps.message.messageParts;
                         for (var i in messageArr) {
-                            if (typeof messageArr[i].content === 'object'){
+                            if (typeof messageArr[i].content === 'object') {
                                 message += messageArr[i].content.alt;
                             } else {
                                 message += messageArr[i].content;
@@ -174,11 +177,8 @@ function cardReady(callback) {
 }
 
 function createdDate(name) {
-    var Httpreq = new XMLHttpRequest();
     var url = 'https://api.twitch.tv/kraken/users/' + name + '?client_id=5ojgte4x1dp72yumoc8fp9xp44nhdj';
-    Httpreq.open("GET", url, false);
-    Httpreq.send(null);
-    var data = JSON.parse(Httpreq.responseText);
+    var data = getJSON(url);
     var d = new Date(data.created_at);
     return d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear();
 }
@@ -206,15 +206,14 @@ function getUserName(el) {
     return name;
 }
 
-function checkKey(e){
+function checkKey(e) {
     e = e || window.event;
     if (e.keyCode == '38' && currMessage < (messageHistory.length - 1)) {
         // up arrow
         currMessage++;
         changeMessage();
         console.log('up text: ', currMessage);
-    }
-    else if (e.keyCode == '40' && currMessage > 0) {
+    } else if (e.keyCode == '40' && currMessage > 0) {
         // down arrow
         currMessage--;
         changeMessage();
@@ -222,10 +221,17 @@ function checkKey(e){
     }
 }
 
-function changeMessage(){
+function changeMessage() {
     var newMessage = messageHistory[currMessage];
     findReact(inputSelector).return.memoizedProps.onValueUpdate(newMessage);
     inputSelector.value = newMessage;
+}
+
+function getJSON(url) {
+    var Httpreq = new XMLHttpRequest(); // a new request
+    Httpreq.open("GET", url, false);
+    Httpreq.send(null);
+    return JSON.parse(Httpreq.responseText);
 }
 
 window.findReact = function(el) {
