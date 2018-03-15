@@ -74,31 +74,65 @@ var config = {
 };
 
 var chatRoom;
+var chatSelector;
+var messageHistory = [''];
+var currMessage = 0;
+var inputSelector;
 
 //Mutation observer for each chat message
 var chatObserver = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
-        if (chatRoom.children._owner._instance.props.isCurrentUserModerator) {
-            mutation.addedNodes.forEach(function(addedNode) {
-                if (addedNode.nodeName == 'DIV') {
+        mutation.addedNodes.forEach(function(addedNode) {
+            if (addedNode.nodeName == 'DIV') {
+                if (chatRoom.isCurrentUserModerator) {
                     if (addedNode.classList.contains('chat-line__message')) {
-                        addButton(addedNode);
-                    } else if (addedNode.classList.contains('viewer-card-layer')) {
-                        modCardReady();
+                        if (findReact(addedNode).memoizedProps.showModerationIcons === true) {
+                            addButton(addedNode);
+                        }
+                    }
+                    if (addedNode.classList.contains('viewer-card-layer__draggable')) {
+                        cardReady(function() {
+                            addModCard();
+                        });
                     }
                 }
-            });
-        }
+                if (addedNode.classList.contains('viewer-card-layer__draggable')) {
+                    cardReady(function() {
+                        addAge();
+                    });
+                }
+                if (addedNode.classList.contains('chat-line__message')) {
+                    if (getUserName(addedNode) == chatRoom.channelLogin) {
+                        var message = '';
+                        var messageArr = findReact(addedNode).memoizedProps.message.messageParts;
+                        for (var i in messageArr) {
+                            if (typeof messageArr[i].content === 'object'){
+                                message += messageArr[i].content.alt;
+                            } else {
+                                message += messageArr[i].content;
+                            }
+                        }
+                        if (currMessage != 0) {
+                            messageHistory.splice(currMessage, 1);
+                            currMessage = 0;
+                        }
+                        messageHistory.splice(1, 0, message);
+                    }
+                }
+            }
+        });
     });
 });
 
 //Mutation observer for chat loading
 var chatLoaded = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
-        var chatSelector = document.querySelector('.chat-room__container');
+        chatSelector = document.querySelector('[data-test-selector="chat-room-component-layout"]');
         if (chatSelector) {
-            chatRoom = findReact(chatSelector).props;
+            chatRoom = findReactChat(chatSelector);
             chatObserver.observe(chatSelector, config);
+            inputSelector = document.querySelector('[data-test-selector="chat-input"]');
+            inputSelector.onkeydown = checkKey;
         }
     });
 });
@@ -110,14 +144,14 @@ function chatPurge() {
 }
 
 function cardTimeout() {
-    var name = findReact(document.querySelector('.viewer-card-layer')).props.children.props.targetLogin;
+    var name = findReact(document.querySelector('.viewer-card-layer')).return.memoizedProps.viewerCardOptions.targetLogin;
     var time = this.getAttribute('data-tmt-timeout');
     var reason = document.querySelector('.tmt-ban-reason').value;
     send('/timeout ' + name + ' ' + time + ' ' + reason);
 }
 
 function send(m) {
-    findReact(document.querySelector('.chat-room__container').children[0]).props.children[1].props.sendMessage(m);
+    chatRoom.onSendMessage(m);
 }
 
 function addButton(el) {
@@ -126,12 +160,17 @@ function addButton(el) {
     btn.addEventListener('click', chatPurge);
 }
 
-function modCardReady() {
-    if (document.querySelectorAll('.viewer-card').length == 0) {
-        window.requestAnimationFrame(modCardReady);
-    } else {
-        addModCard();
-    }
+function cardReady(callback) {
+    var loaded = 0;
+    var check = setInterval(function() {
+        if (document.querySelector('.viewer-card')) {
+            loaded++;
+            clearInterval(check);
+            if (loaded == 1) {
+                callback();
+            }
+        }
+    }, 100);
 }
 
 function createdDate(name) {
@@ -141,18 +180,20 @@ function createdDate(name) {
     Httpreq.send(null);
     var data = JSON.parse(Httpreq.responseText);
     var d = new Date(data.created_at);
-    // return d;
     return d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear();
+}
+
+function addAge() {
+    document.querySelector('.viewer-card__banner').classList.remove('tw-align-items-center');
+    var dn = document.querySelector('.viewer-card__display-name');
+    dn.classList.remove('tw-align-items-center');
+    dn.insertAdjacentHTML('beforeend', profileAge);
+    var login = findReact(document.querySelector('.viewer-card-layer')).return.memoizedProps.viewerCardOptions.targetLogin;
+    document.getElementById('viewer-card__profile-age').innerHTML = '(' + createdDate(login) + ')';
 }
 
 function addModCard() {
     document.querySelector('.viewer-card__actions').insertAdjacentHTML('beforeend', modCard);
-    if (document.querySelectorAll('.tmt-tools').length == 0) {
-        modCardReady();
-    }
-    document.querySelector('.viewer-card__display-name').insertAdjacentHTML('beforeend', profileAge);
-    var login = findReact(document.querySelector('.viewer-card-layer')).props.children.props.targetLogin;
-    document.getElementById('viewer-card__profile-age').innerHTML = '(' + createdDate(login) + ')';
     var timeouts = document.getElementsByClassName('tmt-timeout');
     for (var i = 0; i < timeouts.length; i++) {
         timeouts[i].addEventListener('click', cardTimeout);
@@ -161,18 +202,48 @@ function addModCard() {
 
 function getUserName(el) {
     var name;
-    name = findReact(el).props.message.user.userLogin;
+    name = findReact(el).memoizedProps.message.user.userLogin;
     return name;
 }
 
-function findReact(el) {
-    for (var key in el) {
-        if (key.startsWith("__reactInternalInstance$")) {
-            var compInternals = el[key]._currentElement;
-            var compWrapper = compInternals._owner;
-            var comp = compWrapper._instance;
-            return comp;
+function checkKey(e){
+    e = e || window.event;
+    if (e.keyCode == '38' && currMessage < (messageHistory.length - 1)) {
+        // up arrow
+        currMessage++;
+        changeMessage();
+        console.log('up text: ', currMessage);
+    }
+    else if (e.keyCode == '40' && currMessage > 0) {
+        // down arrow
+        currMessage--;
+        changeMessage();
+        console.log('down text: ', currMessage);
+    }
+}
+
+function changeMessage(){
+    var newMessage = messageHistory[currMessage];
+    findReact(inputSelector).return.memoizedProps.onValueUpdate(newMessage);
+    inputSelector.value = newMessage;
+}
+
+window.findReact = function(el) {
+    for (const key in el) {
+        if (key.startsWith('__reactInternalInstance$')) {
+            const fiberNode = el[key];
+            return fiberNode.return;
         }
     }
     return null;
-}
+};
+
+window.findReactChat = function(el) {
+    for (const key in el) {
+        if (key.startsWith('__reactInternalInstance$')) {
+            const fiberNode = el[key];
+            return fiberNode.memoizedProps.children._owner.memoizedProps;
+        }
+    }
+    return null;
+};
