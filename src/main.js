@@ -102,7 +102,9 @@ var chatObserver = new MutationObserver(function(mutations) {
                     });
                 }
                 if (addedNode.classList.contains('chat-line__message')) {
-                    if (getUserName(addedNode) == chatRoom.channelLogin) {
+                    console.log(getUserName(addedNode));
+                    if (getUserName(addedNode) == chatRoom.currentUserLogin) {
+                        console.log('me message');
                         var message = '';
                         var messageArr = findReact(addedNode).memoizedProps.message.messageParts;
                         for (var i in messageArr) {
