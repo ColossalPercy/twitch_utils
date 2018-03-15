@@ -201,7 +201,7 @@ function addAge(date) {
     dn.insertAdjacentHTML('beforeend', profileAge);
     var d = new Date(date);
     var created = d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear();
-    document.getElementById('viewer-card__profile-age').innerHTML = '(' + created + ')';
+    document.getElementById('viewer-card__profile-age').innerHTML = 'Created at: ' + created;
 }
 
 function addModCard() {
