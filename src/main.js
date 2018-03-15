@@ -66,6 +66,14 @@ const modCard = `
 
 const profileAge = '<p style="color:white;text-align:left;" id="viewer-card__profile-age"></p>';
 
+const nameHistory = `
+    <div class="tw-inline-flex tw-pd-1">
+        <select class="tmt-name-history">
+            <option>Name History</option>
+        </select>
+    </div>
+`;
+
 var config = {
     attributes: false,
     childList: true,
@@ -90,7 +98,6 @@ var chatObserver = new MutationObserver(function(mutations) {
                             addButton(addedNode);
                         }
                     }
-                    // TODO not on own viewer card
                     if (addedNode.classList.contains('viewer-card-layer__draggable')) {
                         var name = findReact(document.querySelector('.viewer-card-layer')).return.memoizedProps.viewerCardOptions.targetLogin;
                         if (name != chatRoom.currentUserLogin)
@@ -101,7 +108,12 @@ var chatObserver = new MutationObserver(function(mutations) {
                 }
                 if (addedNode.classList.contains('viewer-card-layer__draggable')) {
                     cardReady(function() {
-                        addAge();
+                        var name = findReact(document.querySelector('.viewer-card-layer')).return.memoizedProps.viewerCardOptions.targetLogin;
+                        var data = callUserApi(name);
+                        addAge(data.created_at);
+                        if (name != chatRoom.currentUserLogin) {
+                            addNameHistory(data._id);
+                        }
                     });
                 }
                 if (addedNode.classList.contains('chat-line__message')) {
@@ -176,20 +188,20 @@ function cardReady(callback) {
     }, 100);
 }
 
-function createdDate(name) {
+function callUserApi(name) {
     var url = 'https://api.twitch.tv/kraken/users/' + name + '?client_id=5ojgte4x1dp72yumoc8fp9xp44nhdj';
     var data = getJSON(url);
-    var d = new Date(data.created_at);
-    return d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear();
+    return data;
 }
 
-function addAge() {
+function addAge(date) {
     document.querySelector('.viewer-card__banner').classList.remove('tw-align-items-center');
     var dn = document.querySelector('.viewer-card__display-name');
     dn.classList.remove('tw-align-items-center');
     dn.insertAdjacentHTML('beforeend', profileAge);
-    var login = findReact(document.querySelector('.viewer-card-layer')).return.memoizedProps.viewerCardOptions.targetLogin;
-    document.getElementById('viewer-card__profile-age').innerHTML = '(' + createdDate(login) + ')';
+    var d = new Date(date);
+    var created = d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear();
+    document.getElementById('viewer-card__profile-age').innerHTML = '(' + created + ')';
 }
 
 function addModCard() {
@@ -212,12 +224,10 @@ function checkKey(e) {
         // up arrow
         currMessage++;
         changeMessage();
-        console.log('up text: ', currMessage);
     } else if (e.keyCode == '40' && currMessage > 0) {
         // down arrow
         currMessage--;
         changeMessage();
-        console.log('down text: ', currMessage);
     }
 }
 
@@ -232,6 +242,19 @@ function getJSON(url) {
     Httpreq.open("GET", url, false);
     Httpreq.send(null);
     return JSON.parse(Httpreq.responseText);
+}
+
+function addNameHistory(id) {
+    var url = 'https://twitch-tools.rootonline.de/username_changelogs_search.php?q=' + id + '&format=json';
+    var data = getJSON(url);
+    if (data.length > 0) {
+        document.querySelector('.viewer-card__actions').children[0].children[1].insertAdjacentHTML('afterend', nameHistory);
+        for (var i in data) {
+            var option = document.createElement('option');
+            option.text = data[i].username_old;
+            document.querySelector('.tmt-name-history').add(option);
+        }
+    }
 }
 
 window.findReact = function(el) {
