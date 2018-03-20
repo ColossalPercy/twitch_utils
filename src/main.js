@@ -1,78 +1,4 @@
-/*jshint esversion: 6 */
-var purgeIcon = '<path d="M8,15c-3.866,0-7-3.134-7-7s3.134-7,7-7s7,3.134,7,7S11.866,15,8,15z M8,3C5.238,3,3,5.238,3,8c0,2.762,2.238,5,5,5 c2.762,0,5-2.238,5-5C13,5.238,10.762,3,8,3z"></path><path d="M5.558,4.582l5.861,5.86l-0.978,0.978l-5.86-5.861L5.558,4.582z M10.441,4.582l0.978,0.977l-5.861,5.861l-0.977-0.978 L10.441,4.582z"></path>';
-if (localStorage.tmtJackyScrubby == 'true') {
-    purgeIcon = '<path d="M2,4v12h12V4H2z M5.3,13.3C5.3,13.7,5,14,4.7,14S4,13.7,4,13.3V6.7C4,6.3,4.3,6,4.7,6s0.7,0.3,0.7,0.7V13.3z M8.7,13.3C8.7,13.7,8.4,14,8,14s-0.7-0.3-0.7-0.7V6.7C7.3,6.3,7.6,6,8,6s0.7,0.3,0.7,0.7V13.3z M12,13.3c0,0.4-0.3,0.7-0.7,0.7s-0.7-0.3-0.7-0.7V6.7C10.7,6.3,11,6,11.3,6S12,6.3,12,6.7V13.3z M14.7,1.3v1.3H1.3V1.3h3.8c0.6,0,1.1-0.7,1.1-1.3h3.5c0,0.6,0.5,1.3,1.1,1.3H14.7z"></path>';
-}
-
-const htmlStruc = `<button class="mod-icon" data-a-target="chat-purge-button">
-    <div class="tw-tooltip-wrapper tw-inline-flex">
-        <figure class="tw-svg">
-            <svg class="tw-svg__asset tw-svg__asset--inherit" width="16px" height="16px" version="1.1" viewBox="0 0 16 16" x="0px" y="0px">
-            ${purgeIcon}
-            </svg>
-        </figure>
-    <div class="tw-tooltip tw-tooltip--up tw-tooltip--align-center" data-a-target="tw-tooltip-label" role="tooltip">Purge</div>
-    </div>
-</button>`;
-
-const modCard = `
-<div class="tw-c-background-alt-2 tw-border-t tw-full-width tw-flex tw-justify-content-between tmt-tools">
-    <div class="tw-inline-flex tw-flex-row">
-        <div class="tw-inline-flex">
-            <button class="tw-button-icon">
-                <span class="tw-button__text tmt-timeout" data-tmt-timeout="1">Purge</span>
-            </button>
-        </div>
-    </div>
-    <div class="tw-inline-flex tw-flex-row">
-        <div class="tw-inline-flex">
-            <button class="tw-button-icon tmt-timeout" data-tmt-timeout="300">
-                <span class="tw-button__text">5m</span>
-            </button>
-            <button class="tw-button-icon tmt-timeout" data-tmt-timeout="600">
-                <span class="tw-button__text">10m</span>
-            </button>
-            <button class="tw-button-icon tmt-timeout" data-tmt-timeout="3600">
-                <span class="tw-button__text">1h</span>
-            </button>
-            <button class="tw-button-icon tmt-timeout" data-tmt-timeout="43200">
-                <span class="tw-button__text">12h</span>
-            </button>
-            <button class="tw-button-icon tmt-timeout" data-tmt-timeout="86400">
-                <span class="tw-button__text">1d</span>
-            </button>
-            <button class="tw-button-icon tmt-timeout" data-tmt-timeout="604800">
-                <span class="tw-button__text">1w</span>
-            </button>
-        </div>
-    </div>
-</div>
-
-<div class="tw-c-background tw-full-width tw-flex">
-    <div class="tw-inline-flex tw-flex-row">
-        <div class="tw-inline-flex tw-pd-1">
-            <select class="tmt-ban-reason">
-                <option value="">Select a Ban Reason</option>
-                <option value="One-Man Spam">1) One-Man Spam</option>
-                <option value="Posting Bad Links">2) Posting Bad Links</option>
-                <option value="Ban Evasion">3) Ban Evasion</option>
-                <option value="Threats / Personal Info">4) Threats / Personal Info</option>
-                <option value="Hate / Harassment">5) Hate / Harassment</option>
-                <option value="Ignoring Broadcaster / Moderators">6) Ignoring Broadcaster / Moderators</option>
-            </select>
-        </div>
-    </div>
-</div>`;
-
-const profileAge = '<p id="viewer-card__profile-age"></p>';
-
-const nameHistory = `
-    <div class="tw-inline-flex tw-pd-1">
-        <select class="tmt-name-history">
-            <option>Name History</option>
-        </select>
-    </div>
-`;
+import components from "./html/components";
 
 var config = {
     attributes: false,
@@ -170,7 +96,7 @@ function send(m) {
 }
 
 function addButton(el) {
-    el.querySelector('[data-a-target="chat-timeout-button"]').insertAdjacentHTML('afterend', htmlStruc);
+    el.querySelector('[data-a-target="chat-timeout-button"]').insertAdjacentHTML('afterend', components.icons.purge);
     var btn = el.querySelector('[data-a-target="chat-purge-button"]');
     btn.addEventListener('click', chatPurge);
 }
@@ -198,14 +124,14 @@ function addAge(date) {
     document.querySelector('.viewer-card__banner').classList.remove('tw-align-center');
     var dn = document.querySelector('.viewer-card__display-name');
     dn.classList.remove('tw-align-items-center');
-    dn.insertAdjacentHTML('beforeend', profileAge);
+    dn.insertAdjacentHTML('beforeend', components.viewerCard.age);
     var d = new Date(date);
     var created = d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear();
     document.getElementById('viewer-card__profile-age').innerHTML = 'Created on: ' + created;
 }
 
 function addModCard() {
-    document.querySelector('.viewer-card__actions').insertAdjacentHTML('beforeend', modCard);
+    document.querySelector('.viewer-card__actions').insertAdjacentHTML('beforeend', components.modCard.actions);
     var timeouts = document.getElementsByClassName('tmt-timeout');
     for (var i = 0; i < timeouts.length; i++) {
         timeouts[i].addEventListener('click', cardTimeout);
@@ -248,7 +174,7 @@ function addNameHistory(id) {
     var url = 'https://twitch-tools.rootonline.de/username_changelogs_search.php?q=' + id + '&format=json';
     var data = getJSON(url);
     if (data.length > 0) {
-        document.querySelector('.viewer-card__actions').children[0].children[1].insertAdjacentHTML('afterend', nameHistory);
+        document.querySelector('.viewer-card__actions').children[0].children[1].insertAdjacentHTML('afterend', components.viewerCard.history);
         for (var i in data) {
             var option = document.createElement('option');
             option.text = data[i].username_old;

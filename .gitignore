@@ -46,5 +46,10 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+# =========================
+# TMT
+# =========================
+
 *.zip
-*.svg
+node_modules
+npm-debug.log
