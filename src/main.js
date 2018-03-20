@@ -64,7 +64,7 @@ const modCard = `
     </div>
 </div>`;
 
-const profileAge = '<p style="color:white;text-align:left;" id="viewer-card__profile-age"></p>';
+const profileAge = '<p id="viewer-card__profile-age"></p>';
 
 const nameHistory = `
     <div class="tw-inline-flex tw-pd-1">
