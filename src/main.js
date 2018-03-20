@@ -195,7 +195,7 @@ function callUserApi(name) {
 }
 
 function addAge(date) {
-    document.querySelector('.viewer-card__banner').classList.remove('tw-align-items-center');
+    document.querySelector('.viewer-card__banner').classList.remove('tw-align-center');
     var dn = document.querySelector('.viewer-card__display-name');
     dn.classList.remove('tw-align-items-center');
     dn.insertAdjacentHTML('beforeend', profileAge);
