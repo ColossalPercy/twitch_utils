@@ -170,7 +170,7 @@ function checkMessage() {
         // check if tmt command or user alias
         if (command === 'alias') {
 
-            var name = parts[1];
+            var name = parts[1].toLowerCase();
             var alias = parts.splice(2).join(' ');
 
             // check if a default twitch command
@@ -199,6 +199,27 @@ function checkMessage() {
                             sendStatus(txt, false, true);
                         }
                     }
+                } else if (name === 'importffz') {
+                    var splitPos = [];
+                    var pos, t;
+                    if (localStorage.ffz_setting_command_aliases) {
+                        var f = localStorage.ffz_setting_command_aliases;
+                        while (pos != -1) {
+                            pos = f.indexOf('"', i + 1);
+                            i = pos;
+                            if (pos > 0) {
+                                splitPos.push(pos);
+                            }
+                        }
+                        for (var i = 0; i < splitPos.length; i += 4) {
+                            var str1 = f.substr(splitPos[i] + 1, splitPos[i + 1] - splitPos[i] - 1).toLowerCase();
+                            var str2 = f.substr(splitPos[i + 2] + 1, splitPos[i + 3] - splitPos[i + 2] - 1);
+                            aliases[str1] = str2;
+                        }
+                        sendStatus('Imported all aliases from FFZ! Run "/alias list" to view.');
+                    } else {
+                        err = true;
+                    }
                 } else if (alias) {
                     aliases[name] = alias;
                     sendStatus('Created alias: ' + name);
@@ -213,6 +234,8 @@ function checkMessage() {
                 errTxt = "Usage: /alias <name> <alias>";
                 if (name === 'delete') {
                     errTxt = "Usage: /alias delete <name>";
+                } else if (name === 'importffz') {
+                    errTxt = "No FFZ aliases found!";
                 }
                 sendStatus(errTxt);
             }
@@ -232,11 +255,12 @@ function sendStatus(txt, b = false, i = false) {
         sSpan.style.fontWeight = 'bold';
     }
     if (i) {
-        sSpan.style.paddingLeft = '20px';
+        sDiv.style.marginLeft = '20px';
     }
     sSpan.textContent = txt;
     sDiv.appendChild(sSpan);
     chatList.appendChild(sDiv);
+    chatList.parentElement.scrollIntoView(false);
 }
 
 function changeMessage() {
