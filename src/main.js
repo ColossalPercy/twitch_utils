@@ -28,11 +28,6 @@ var chatObserver = new MutationObserver(function(mutations) {
         mutation.addedNodes.forEach(function(addedNode) {
             if (addedNode.nodeName == 'DIV') {
                 if (chatRoom.isCurrentUserModerator) {
-                    if (addedNode.attributes.getNamedItem('data-a-target')) {
-                        if (addedNode.attributes.getNamedItem('data-a-target').value === 'chat-welcome-message') {
-                            chatList = addedNode.parentElement;
-                        }
-                    }
                     if (addedNode.classList.contains('chat-line__message')) {
                         if (findReact(addedNode).memoizedProps.showModerationIcons === true) {
                             addButton(addedNode);
@@ -70,6 +65,7 @@ var chatLoaded = new MutationObserver(function(mutations) {
             chatObserver.observe(chatSelector, config);
             inputSelector = document.querySelector('[data-test-selector="chat-input"]');
             chatSendBtn = document.querySelector('[data-test-selector="chat-send-button"]');
+            chatList = document.querySelector('.chat-list__lines').SimpleBar.contentEl.children[0];
             chatSendBtn.onclick = checkMessage;
             inputSelector.onkeydown = checkKey;
         }
@@ -194,7 +190,7 @@ function checkMessage() {
                         sendStatus('Alias ' + alias + ' does not exist!');
                     }
                 } else if (name === 'list') {
-                    if (typeof aliases[0] == 'undefined') {
+                    if (Object.keys(aliases).length == 0) {
                         sendStatus('No current aliases.', true);
                     } else {
                         sendStatus('Current aliases:', true);
