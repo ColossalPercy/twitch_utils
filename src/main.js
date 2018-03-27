@@ -22,6 +22,11 @@ if (localStorage.tmtAliases) {
     aliases = JSON.parse(localStorage.tmtAliases);
 }
 
+var blockedEmotes = [];
+if (localStorage.tmtBlockedEmotes) {
+    blockedEmotes = localStorage.tmtBlockedEmotes.split(',');
+}
+
 //Mutation observer for each chat message
 var chatObserver = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
@@ -50,6 +55,19 @@ var chatObserver = new MutationObserver(function(mutations) {
                             addNameHistory(data._id);
                         }
                     });
+                }
+                if (addedNode.classList.contains('chat-line__message')) {
+                    var parts = findReact(addedNode).stateNode.props.message.messageParts;
+                    for (var i = 0; i < parts.length; i++) {
+                        if (parts[i].type == 3 && blockedEmotes.includes(parts[i].content.alt)) {
+                            var n = parts[i].content.images.sources;
+                            console.log(n);
+                            n['1x'] = 'https://raw.githubusercontent.com/ColossalPercy/twitch_mod_tools/master/assets/blank_28x.png';
+                            n['2x'] = 'https://raw.githubusercontent.com/ColossalPercy/twitch_mod_tools/master/assets/blank_56x.png';
+                            n['4x'] = 'https://raw.githubusercontent.com/ColossalPercy/twitch_mod_tools/master/assets/blank_112x.png';
+
+                        }
+                    }
                 }
             }
         });
