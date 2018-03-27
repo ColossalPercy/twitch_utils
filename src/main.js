@@ -9,9 +9,18 @@ var config = {
 
 var chatRoom;
 var chatSelector;
+var chatList;
 var messageHistory = [''];
 var currMessage = 0;
 var inputSelector;
+var chatSendBtn;
+
+
+var twitchCommands = ['help', 'w', 'me', 'disconnect', 'mods', 'color', 'commercial', 'mod', 'unmod', 'ban', 'unban', 'timeout', 'untimeout', 'slow', 'slowoff', 'r9kbeta', 'r9kbetaoff', 'emoteonly', 'emoteonlyoff', 'clear', 'subscribers', 'subscribersoff', 'followers', 'followersoff', 'host', 'unhost'];
+var aliases = {};
+if (localStorage.tmtAliases) {
+    aliases = JSON.parse(localStorage.tmtAliases);
+}
 
 //Mutation observer for each chat message
 var chatObserver = new MutationObserver(function(mutations) {
@@ -19,6 +28,11 @@ var chatObserver = new MutationObserver(function(mutations) {
         mutation.addedNodes.forEach(function(addedNode) {
             if (addedNode.nodeName == 'DIV') {
                 if (chatRoom.isCurrentUserModerator) {
+                    if (addedNode.attributes.getNamedItem('data-a-target')) {
+                        if (addedNode.attributes.getNamedItem('data-a-target').value === 'chat-welcome-message') {
+                            chatList = addedNode.parentElement;
+                        }
+                    }
                     if (addedNode.classList.contains('chat-line__message')) {
                         if (findReact(addedNode).memoizedProps.showModerationIcons === true) {
                             addButton(addedNode);
@@ -42,24 +56,6 @@ var chatObserver = new MutationObserver(function(mutations) {
                         }
                     });
                 }
-                if (addedNode.classList.contains('chat-line__message')) {
-                    if (getUserName(addedNode) == chatRoom.currentUserLogin) {
-                        var message = '';
-                        var messageArr = findReact(addedNode).memoizedProps.message.messageParts;
-                        for (var i in messageArr) {
-                            if (typeof messageArr[i].content === 'object') {
-                                message += messageArr[i].content.alt;
-                            } else {
-                                message += messageArr[i].content;
-                            }
-                        }
-                        if (currMessage != 0) {
-                            messageHistory.splice(currMessage, 1);
-                            currMessage = 0;
-                        }
-                        messageHistory.splice(1, 0, message);
-                    }
-                }
             }
         });
     });
@@ -73,6 +69,8 @@ var chatLoaded = new MutationObserver(function(mutations) {
             chatRoom = findReactChat(chatSelector);
             chatObserver.observe(chatSelector, config);
             inputSelector = document.querySelector('[data-test-selector="chat-input"]');
+            chatSendBtn = document.querySelector('[data-test-selector="chat-send-button"]');
+            chatSendBtn.onclick = checkMessage;
             inputSelector.onkeydown = checkKey;
         }
     });
@@ -154,7 +152,91 @@ function checkKey(e) {
         // down arrow
         currMessage--;
         changeMessage();
+    } else if (e.keyCode == '13' && inputSelector.value) {
+        // enter key
+        checkMessage();
     }
+}
+
+function checkMessage() {
+    var msg = inputSelector.value;
+    if (currMessage != 0) {
+        messageHistory.splice(currMessage, 1);
+        currMessage = 0;
+    }
+    messageHistory.splice(1, 0, msg);
+
+    if (msg.charAt(0) == '/') {
+        msg = msg.substr(1);
+        var parts = msg.split(' ');
+        var command = parts[0].toLowerCase();
+
+        // check if tmt command or user alias
+        if (command === 'alias') {
+
+            var name = parts[1];
+            var alias = parts.splice(2).join(' ');
+
+            // check if a default twitch command
+            if (twitchCommands.includes(name)) {
+                return;
+            }
+            findReact(inputSelector).return.memoizedProps.onValueUpdate('');
+            inputSelector.value = '';
+            var err = false;
+            var errTxt;
+            if (name) {
+                if (name === 'delete' && alias) {
+                    if (aliases.hasOwnProperty(alias)) {
+                        delete aliases[alias];
+                        sendStatus('Removed alias: ' + alias);
+                    } else {
+                        sendStatus('Alias ' + alias + ' does not exist!');
+                    }
+                } else if (name === 'list') {
+                    if (typeof aliases[0] == 'undefined') {
+                        sendStatus('No current aliases.', true);
+                    } else {
+                        sendStatus('Current aliases:', true);
+                        for (var k in aliases) {
+                            var txt = k + ': ' + aliases[k];
+                            sendStatus(txt);
+                        }
+                    }
+                } else if (alias) {
+                    aliases[name] = alias;
+                } else {
+                    err = true;
+                }
+                localStorage.tmtAliases = JSON.stringify(aliases);
+            } else {
+                err = true;
+            }
+            if (err === true) {
+                errTxt = "Usage: /alias <name> <alias>";
+                if (name === 'delete') {
+                    errTxt = "Usage: /alias delete <name>";
+                }
+                sendStatus(errTxt);
+            }
+        } else if (aliases.hasOwnProperty(command)) {
+            findReact(inputSelector).return.memoizedProps.onValueUpdate('');
+            inputSelector.value = '';
+            chatRoom.onSendMessage(aliases[command]);
+        }
+    }
+}
+
+function sendStatus(txt, b = false) {
+    var sDiv = document.createElement('div');
+    sDiv.setAttribute('class', 'chat-line__status');
+    var sSpan = document.createElement('span');
+    if (b) {
+        sSpan.style.fontWeight = 'bold';
+    }
+    sSpan.textContent = txt;
+    sDiv.appendChild(sSpan);
+    chatList.appendChild(sDiv);
 }
 
 function changeMessage() {
