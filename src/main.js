@@ -196,11 +196,12 @@ function checkMessage() {
                         sendStatus('Current aliases:', true);
                         for (var k in aliases) {
                             var txt = k + ': ' + aliases[k];
-                            sendStatus(txt);
+                            sendStatus(txt, false, true);
                         }
                     }
                 } else if (alias) {
                     aliases[name] = alias;
+                    sendStatus('Created alias: ' + name);
                 } else {
                     err = true;
                 }
@@ -223,12 +224,15 @@ function checkMessage() {
     }
 }
 
-function sendStatus(txt, b = false) {
+function sendStatus(txt, b = false, i = false) {
     var sDiv = document.createElement('div');
     sDiv.setAttribute('class', 'chat-line__status');
     var sSpan = document.createElement('span');
     if (b) {
         sSpan.style.fontWeight = 'bold';
+    }
+    if (i) {
+        sSpan.style.paddingLeft = '20px';
     }
     sSpan.textContent = txt;
     sDiv.appendChild(sSpan);
