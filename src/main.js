@@ -58,14 +58,25 @@ var chatObserver = new MutationObserver(function(mutations) {
                 }
                 if (addedNode.classList.contains('chat-line__message')) {
                     var parts = findReact(addedNode).stateNode.props.message.messageParts;
+                    var imgs = addedNode.getElementsByTagName('img');
+                    var emotes=[];
+                    for (var t = 0; t < imgs.length; t++) {
+                        if (imgs[t].classList.contains('chat-line__message--emote')) {
+                            emotes.push(imgs[t]);
+                        }
+                    }
+                    var emoteN = 0;
                     for (var i = 0; i < parts.length; i++) {
-                        if (parts[i].type == 3 && blockedEmotes.includes(parts[i].content.alt)) {
-                            var n = parts[i].content.images.sources;
-                            console.log(n);
-                            n['1x'] = 'https://raw.githubusercontent.com/ColossalPercy/twitch_mod_tools/master/assets/blank_28x.png';
-                            n['2x'] = 'https://raw.githubusercontent.com/ColossalPercy/twitch_mod_tools/master/assets/blank_56x.png';
-                            n['4x'] = 'https://raw.githubusercontent.com/ColossalPercy/twitch_mod_tools/master/assets/blank_112x.png';
-
+                        if (parts[i].type == 3) {
+                            if (blockedEmotes.includes(parts[i].content.alt)) {
+                                var n = parts[i].content.images.sources;
+                                n['1x'] = 'https://raw.githubusercontent.com/ColossalPercy/twitch_mod_tools/master/assets/blank_28x.png';
+                                n['2x'] = 'https://raw.githubusercontent.com/ColossalPercy/twitch_mod_tools/master/assets/blank_56x.png';
+                                n['4x'] = 'https://raw.githubusercontent.com/ColossalPercy/twitch_mod_tools/master/assets/blank_112x.png';
+                                emotes[emoteN].src = 'https://raw.githubusercontent.com/ColossalPercy/twitch_mod_tools/master/assets/blank_28x.png';
+                                emotes[emoteN].srcset = '';
+                            }
+                            emoteN++;
                         }
                     }
                 }
