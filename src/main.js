@@ -119,8 +119,8 @@ function send(m) {
 }
 
 function addButton(el) {
-    el.querySelector('[data-a-target="chat-timeout-button"]').insertAdjacentHTML('afterend', components.icons.purge);
-    var btn = el.querySelector('[data-a-target="chat-purge-button"]');
+    el.querySelector('[data-test-selector="chat-timeout-button"]').insertAdjacentHTML('afterend', components.icons.purge);
+    var btn = el.querySelector('[data-test-selector="chat-purge-button"]');
     btn.addEventListener('click', chatPurge);
 }
 
