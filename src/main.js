@@ -1,45 +1,47 @@
 import components from "./html/components";
 
-var config = {
+let config = {
     attributes: false,
     childList: true,
     characterData: false,
     subtree: true
 };
 
-var chatRoom;
-var chatSelector;
-var chatList;
-var messageHistory = [''];
-var currMessage = 0;
-var inputSelector;
-var chatSendBtn;
+let chatRoom;
+let chatSelector;
+let chatList;
+let messageHistory = [''];
+let currMessage = 0;
+let inputSelector;
+let chatSendBtn;
+let onlineFriends;
+let friendList = [];
 
 
-var twitchCommands = ['help', 'w', 'me', 'disconnect', 'mods', 'color', 'commercial', 'mod', 'unmod', 'ban', 'unban', 'timeout', 'untimeout', 'slow', 'slowoff', 'r9kbeta', 'r9kbetaoff', 'emoteonly', 'emoteonlyoff', 'clear', 'subscribers', 'subscribersoff', 'followers', 'followersoff', 'host', 'unhost'];
-var aliases = {};
+let twitchCommands = ['help', 'w', 'me', 'disconnect', 'mods', 'color', 'commercial', 'mod', 'unmod', 'ban', 'unban', 'timeout', 'untimeout', 'slow', 'slowoff', 'r9kbeta', 'r9kbetaoff', 'emoteonly', 'emoteonlyoff', 'clear', 'subscribers', 'subscribersoff', 'followers', 'followersoff', 'host', 'unhost'];
+let aliases = {};
 if (localStorage.tmtAliases) {
     aliases = JSON.parse(localStorage.tmtAliases);
 }
 
-var blockedEmotes = [];
+let blockedEmotes = [];
 if (localStorage.tmtBlockedEmotes) {
     blockedEmotes = localStorage.tmtBlockedEmotes.split(',');
 }
 
 //Mutation observer for each chat message
-var chatObserver = new MutationObserver(function(mutations) {
+let chatObserver = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
         mutation.addedNodes.forEach(function(addedNode) {
             if (addedNode.nodeName == 'DIV') {
                 if (chatRoom.isCurrentUserModerator) {
                     if (addedNode.classList.contains('chat-line__message')) {
                         if (findReact(addedNode).memoizedProps.showModerationIcons === true) {
-                            addButton(addedNode);
+                            addPurgeButton(addedNode);
                         }
                     }
                     if (addedNode.classList.contains('viewer-card-layer__draggable')) {
-                        var name = findReact(document.querySelector('.viewer-card-layer')).return.memoizedProps.viewerCardOptions.targetLogin;
+                        let name = findReact(document.querySelector('.viewer-card-layer'), 2).memoizedProps.viewerCardOptions.targetLogin;
                         if (name != chatRoom.currentUserLogin)
                             cardReady(function() {
                                 addModCard();
@@ -48,8 +50,8 @@ var chatObserver = new MutationObserver(function(mutations) {
                 }
                 if (addedNode.classList.contains('viewer-card-layer__draggable')) {
                     cardReady(function() {
-                        var name = findReact(document.querySelector('.viewer-card-layer')).return.memoizedProps.viewerCardOptions.targetLogin;
-                        var data = callUserApi(name);
+                        let name = findReact(document.querySelector('.viewer-card-layer'), 2).memoizedProps.viewerCardOptions.targetLogin;
+                        let data = callUserApi(name);
                         addAge(data.created_at);
                         if (name != chatRoom.currentUserLogin) {
                             addNameHistory(data._id);
@@ -57,19 +59,19 @@ var chatObserver = new MutationObserver(function(mutations) {
                     });
                 }
                 if (addedNode.classList.contains('chat-line__message')) {
-                    var parts = findReact(addedNode).stateNode.props.message.messageParts;
-                    var imgs = addedNode.getElementsByTagName('img');
-                    var emotes=[];
-                    for (var t = 0; t < imgs.length; t++) {
+                    let parts = findReact(addedNode).memoizedProps.message.messageParts;
+                    let imgs = addedNode.getElementsByTagName('img');
+                    let emotes = [];
+                    for (let t = 0; t < imgs.length; t++) {
                         if (imgs[t].classList.contains('chat-line__message--emote')) {
                             emotes.push(imgs[t]);
                         }
                     }
-                    var emoteN = 0;
-                    for (var i = 0; i < parts.length; i++) {
+                    let emoteN = 0;
+                    for (let i = 0; i < parts.length; i++) {
                         if (parts[i].type == 3) {
                             if (blockedEmotes.includes(parts[i].content.alt)) {
-                                var n = parts[i].content.images.sources;
+                                let n = parts[i].content.images.sources;
                                 n['1x'] = 'https://raw.githubusercontent.com/ColossalPercy/twitch_mod_tools/master/assets/blank_28x.png';
                                 n['2x'] = 'https://raw.githubusercontent.com/ColossalPercy/twitch_mod_tools/master/assets/blank_56x.png';
                                 n['4x'] = 'https://raw.githubusercontent.com/ColossalPercy/twitch_mod_tools/master/assets/blank_112x.png';
@@ -86,7 +88,7 @@ var chatObserver = new MutationObserver(function(mutations) {
 });
 
 //Mutation observer for chat loading
-var chatLoaded = new MutationObserver(function(mutations) {
+let chatLoaded = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
         chatSelector = document.querySelector('[data-test-selector="chat-room-component-layout"]');
         if (chatSelector) {
@@ -95,6 +97,7 @@ var chatLoaded = new MutationObserver(function(mutations) {
             inputSelector = document.querySelector('[data-test-selector="chat-input"]');
             chatSendBtn = document.querySelector('[data-test-selector="chat-send-button"]');
             chatList = document.querySelector('.chat-list__lines').SimpleBar.contentEl.children[0];
+            onlineFriends = document.querySelector('.online-friends');
             chatSendBtn.onclick = checkMessage;
             inputSelector.onkeydown = checkKey;
         }
@@ -103,30 +106,30 @@ var chatLoaded = new MutationObserver(function(mutations) {
 chatLoaded.observe(document.body, config);
 
 function chatPurge() {
-    var name = getUserName(this.parentElement.parentElement);
-    send('/timeout ' + name + ' 1');
+    let name = getUserName(this.parentElement.parentElement);
+    sendMessage('/timeout ' + name + ' 1');
 }
 
 function cardTimeout() {
-    var name = findReact(document.querySelector('.viewer-card-layer')).return.memoizedProps.viewerCardOptions.targetLogin;
-    var time = this.getAttribute('data-tmt-timeout');
-    var reason = document.querySelector('.tmt-ban-reason').value;
-    send('/timeout ' + name + ' ' + time + ' ' + reason);
+    let name = findReact(document.querySelector('.viewer-card-layer'), 2).memoizedProps.viewerCardOptions.targetLogin;
+    let time = this.getAttribute('data-tmt-timeout');
+    let reason = document.querySelector('.tmt-ban-reason').value;
+    sendMessage('/timeout ' + name + ' ' + time + ' ' + reason);
 }
 
-function send(m) {
+function sendMessage(m) {
     chatRoom.onSendMessage(m);
 }
 
-function addButton(el) {
+function addPurgeButton(el) {
     el.querySelector('[data-test-selector="chat-timeout-button"]').insertAdjacentHTML('afterend', components.icons.purge);
-    var btn = el.querySelector('[data-test-selector="chat-purge-button"]');
+    let btn = el.querySelector('[data-test-selector="chat-purge-button"]');
     btn.addEventListener('click', chatPurge);
 }
 
 function cardReady(callback) {
-    var loaded = 0;
-    var check = setInterval(function() {
+    let loaded = 0;
+    let check = setInterval(function() {
         if (document.querySelector('.viewer-card')) {
             loaded++;
             clearInterval(check);
@@ -138,31 +141,31 @@ function cardReady(callback) {
 }
 
 function callUserApi(name) {
-    var url = 'https://api.twitch.tv/kraken/users/' + name + '?client_id=5ojgte4x1dp72yumoc8fp9xp44nhdj';
-    var data = getJSON(url);
+    let url = 'https://api.twitch.tv/kraken/users/' + name + '?client_id=5ojgte4x1dp72yumoc8fp9xp44nhdj';
+    let data = getJSON(url);
     return data;
 }
 
 function addAge(date) {
     document.querySelector('.viewer-card__banner').classList.remove('tw-align-center');
-    var dn = document.querySelector('.viewer-card__display-name');
+    let dn = document.querySelector('.viewer-card__display-name');
     dn.classList.remove('tw-align-items-center');
     dn.insertAdjacentHTML('beforeend', components.viewerCard.age);
-    var d = new Date(date);
-    var created = d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear();
+    let d = new Date(date);
+    let created = d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear();
     document.getElementById('viewer-card__profile-age').innerHTML = 'Created on: ' + created;
 }
 
 function addModCard() {
     document.querySelector('.viewer-card__actions').insertAdjacentHTML('beforeend', components.modCard.actions);
-    var timeouts = document.getElementsByClassName('tmt-timeout');
-    for (var i = 0; i < timeouts.length; i++) {
+    let timeouts = document.getElementsByClassName('tmt-timeout');
+    for (let i = 0; i < timeouts.length; i++) {
         timeouts[i].addEventListener('click', cardTimeout);
     }
 }
 
 function getUserName(el) {
-    var name;
+    let name;
     name = findReact(el).memoizedProps.message.user.userLogin;
     return name;
 }
@@ -180,11 +183,14 @@ function checkKey(e) {
     } else if (e.keyCode == '13' && inputSelector.value) {
         // enter key
         checkMessage();
+    } else if (e.keyCode == '9') {
+        // tab key
+        console.log('tab');
     }
 }
 
 function checkMessage() {
-    var msg = inputSelector.value;
+    let msg = inputSelector.value;
     if (currMessage != 0) {
         messageHistory.splice(currMessage, 1);
         currMessage = 0;
@@ -193,23 +199,23 @@ function checkMessage() {
 
     if (msg.charAt(0) == '/') {
         msg = msg.substr(1);
-        var parts = msg.split(' ');
-        var command = parts[0].toLowerCase();
+        let parts = msg.split(' ');
+        let command = parts[0].toLowerCase();
 
         // check if tmt command or user alias
         if (command === 'alias') {
 
-            var name = parts[1].toLowerCase();
-            var alias = parts.splice(2).join(' ');
+            let name = parts[1].toLowerCase();
+            let alias = parts.splice(2).join(' ');
 
             // check if a default twitch command
             if (twitchCommands.includes(name)) {
                 return;
             }
-            findReact(inputSelector).return.memoizedProps.onValueUpdate('');
+            findReact(inputSelector, 2).memoizedProps.onValueUpdate('');
             inputSelector.value = '';
-            var err = false;
-            var errTxt;
+            let err = false;
+            let errTxt;
             if (name) {
                 if (name === 'delete' && alias) {
                     if (aliases.hasOwnProperty(alias)) {
@@ -223,16 +229,16 @@ function checkMessage() {
                         sendStatus('No current aliases.', true);
                     } else {
                         sendStatus('Current aliases:', true);
-                        for (var k in aliases) {
-                            var txt = k + ': ' + aliases[k];
+                        for (let k in aliases) {
+                            let txt = k + ': ' + aliases[k];
                             sendStatus(txt, false, true);
                         }
                     }
                 } else if (name === 'importffz') {
-                    var splitPos = [];
-                    var pos, t;
+                    let splitPos = [];
+                    let pos, t;
                     if (localStorage.ffz_setting_command_aliases) {
-                        var f = localStorage.ffz_setting_command_aliases;
+                        let f = localStorage.ffz_setting_command_aliases;
                         while (pos != -1) {
                             pos = f.indexOf('"', i + 1);
                             i = pos;
@@ -240,9 +246,9 @@ function checkMessage() {
                                 splitPos.push(pos);
                             }
                         }
-                        for (var i = 0; i < splitPos.length; i += 4) {
-                            var str1 = f.substr(splitPos[i] + 1, splitPos[i + 1] - splitPos[i] - 1).toLowerCase();
-                            var str2 = f.substr(splitPos[i + 2] + 1, splitPos[i + 3] - splitPos[i + 2] - 1);
+                        for (let i = 0; i < splitPos.length; i += 4) {
+                            let str1 = f.substr(splitPos[i] + 1, splitPos[i + 1] - splitPos[i] - 1).toLowerCase();
+                            let str2 = f.substr(splitPos[i + 2] + 1, splitPos[i + 3] - splitPos[i + 2] - 1);
                             aliases[str1] = str2;
                         }
                         sendStatus('Imported all aliases from FFZ! Run "/alias list" to view.');
@@ -269,17 +275,17 @@ function checkMessage() {
                 sendStatus(errTxt);
             }
         } else if (aliases.hasOwnProperty(command)) {
-            findReact(inputSelector).return.memoizedProps.onValueUpdate('');
+            findReact(inputSelector, 2).memoizedProps.onValueUpdate('');
             inputSelector.value = '';
-            chatRoom.onSendMessage(aliases[command]);
+            sendMessage(aliases[command]);
         }
     }
 }
 
 function sendStatus(txt, b = false, i = false) {
-    var sDiv = document.createElement('div');
+    let sDiv = document.createElement('div');
     sDiv.setAttribute('class', 'chat-line__status');
-    var sSpan = document.createElement('span');
+    let sSpan = document.createElement('span');
     if (b) {
         sSpan.style.fontWeight = 'bold';
     }
@@ -292,37 +298,48 @@ function sendStatus(txt, b = false, i = false) {
     chatList.parentElement.scrollIntoView(false);
 }
 
+function getFriendList() {
+    let friends = findReact(onlineFriends).memoizedProps.friends;
+    for (let i = 0; i < friends.length; i++) {
+        friendList[i] = friends[i].node.displayName;
+    }
+    console.log(friendList);
+}
+
 function changeMessage() {
-    var newMessage = messageHistory[currMessage];
-    findReact(inputSelector).return.memoizedProps.onValueUpdate(newMessage);
+    let newMessage = messageHistory[currMessage];
+    findReact(inputSelector, 2).memoizedProps.onValueUpdate(newMessage);
     inputSelector.value = newMessage;
 }
 
 function getJSON(url) {
-    var Httpreq = new XMLHttpRequest(); // a new request
+    let Httpreq = new XMLHttpRequest(); // a new request
     Httpreq.open("GET", url, false);
     Httpreq.send(null);
     return JSON.parse(Httpreq.responseText);
 }
 
 function addNameHistory(id) {
-    var url = 'https://twitch-tools.rootonline.de/username_changelogs_search.php?q=' + id + '&format=json';
-    var data = getJSON(url);
+    let url = 'https://twitch-tools.rootonline.de/username_changelogs_search.php?q=' + id + '&format=json';
+    let data = getJSON(url);
     if (data.length > 0) {
         document.querySelector('.viewer-card__actions').children[0].children[1].insertAdjacentHTML('afterend', components.viewerCard.history);
-        for (var i in data) {
-            var option = document.createElement('option');
+        for (let i in data) {
+            let option = document.createElement('option');
             option.text = data[i].username_old;
             document.querySelector('.tmt-name-history').add(option);
         }
     }
 }
 
-window.findReact = function(el) {
+window.findReact = function(el, depth = 1) {
     for (const key in el) {
         if (key.startsWith('__reactInternalInstance$')) {
-            const fiberNode = el[key];
-            return fiberNode.return;
+            let fiberNode = el[key];
+            for (let i = 0; i < depth; i++) {
+                fiberNode = fiberNode.return;
+            }
+            return fiberNode;
         }
     }
     return null;
