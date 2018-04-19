@@ -1,3 +1,11 @@
 .tmt-highlight-friend {
     background-color: rgba(100, 65, 164, 0.2);
 }
+
+.tmt-highlight-vip {
+    background-color: rgba(0, 215, 0, 0.2);
+}
+
+.tmt-hidden {
+    visibility: hidden;
+}
