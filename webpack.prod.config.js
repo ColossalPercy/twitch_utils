@@ -20,6 +20,6 @@ module.exports = {
 
     output: {
         path: path.resolve(__dirname, 'build'),
-        filename: 'tmt.min.js'
+        filename: 'tu.min.js'
     },
 };

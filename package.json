@@ -1,5 +1,5 @@
 {
-  "name": "twitch-mod-tools",
+  "name": "twitch-utilities",
   "version": "1.0.0",
   "main": "script.js",
   "devDependencies": {

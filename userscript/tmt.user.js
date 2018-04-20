@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Twith Mod Tools
+// @name         Twith Utils
 // @namespace    http://jacksp.co.uk
 // @version      0.1
-// @description  Add useful tools to Twitch.tv!
+// @description  Add useful utilities to Twitch.tv!
 // @author       ColossalPercy
 // @match        *://*.twitch.tv/*
 // @grant        none
@@ -14,10 +14,10 @@
     var src;
 
     if (localStorage.tmtDev == 'true') {
-        src = 'http://127.0.0.1:3000/build/tmt.min.js';
-        console.log('TMT: Dev Environment Loaded');
+        src = 'http://127.0.0.1:3000/build/tu.min.js';
+        console.log('TU: Dev Environment Loaded');
     } else {
-        src = 'https://rawgit.com/ColossalPercy/twitch_mod_tools/master/build/tmt.min.js';
+        src = 'https://rawgit.com/ColossalPercy/twitch_mod_tools/master/build/tu.min.js';
     }
 
     var script = document.createElement('script');

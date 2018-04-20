@@ -18,7 +18,7 @@ module.exports = {
     },
     output: {
         path: path.resolve(__dirname, 'build'),
-        filename: 'tmt.dev.js'
+        filename: 'tu.dev.js'
     },
     watch: true
 };

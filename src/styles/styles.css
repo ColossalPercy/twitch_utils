@@ -1,16 +1,16 @@
-.tmt-highlight-friend {
+.tu-highlight-friend {
     background-color: rgba(100, 65, 164, 0.2);
 }
 
-.tmt-highlight-vip {
+.tu-highlight-vip {
     background-color: rgba(0, 215, 0, 0.2);
 }
 
-.tmt-hidden {
+.tu-hidden {
     visibility: hidden;
 }
 
-.tmt-settings-gui {
+.tu-settings-gui {
     width: 500px;
     height: 300px;
     z-index: 999999;

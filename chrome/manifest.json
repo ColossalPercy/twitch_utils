@@ -11,17 +11,17 @@
       "all_frames": true
     }
   ],
-  "description": "Twitch Mod Tools.",
+  "description": "Add useful utilities to twitch.tv!",
   "icons": {
     "128": "assets/icon128.png",
     "48": "assets/icon48.png",
     "16": "assets/icon16.png"
   },
   "manifest_version": 2,
-  "name": "Twitch Mod Tools",
+  "name": "Twitch Utils",
   "permissions": [
     "*://*.twitch.tv/*",
     "*://*.rawgit.com/*"
   ],
-  "version": "0.2"
+  "version": "0.3"
 }

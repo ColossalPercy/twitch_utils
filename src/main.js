@@ -73,7 +73,7 @@ let chatObserver = new MutationObserver(function(mutations) {
                     let message = findReact(addedNode);
                     let from = message.memoizedProps.message.user.userDisplayName;
                     if (localStorage.tmtHighlightFriend != 'false' && friendList.includes(from) && !(addedNode.classList.contains('ffz-mentioned'))) {
-                        addedNode.classList.add('tmt-highlight-friend');
+                        addedNode.classList.add('tu-highlight-friend');
                     }
 
                     let parts = message.memoizedProps.message.messageParts;
@@ -122,19 +122,19 @@ let chatLoaded = new MutationObserver(function(mutations) {
             }
             topNav = document.querySelector('.top-nav');
             mainPage = topNav.parentElement;
-            if (!(document.querySelector('.tmt-settings-gui'))) {
+            if (!(document.querySelector('.tu-settings-gui'))) {
                 mainPage.insertAdjacentHTML('beforeend', components.settings.gui);
 				let options = {
 					setCursor: true,
 					limit: mainPage
 				};
-				new draggable(document.querySelector('.tmt-settings-gui'), options);
-				document.querySelector('.tmt-settings-close').onclick = toggleVisibility;
+				new draggable(document.querySelector('.tu-settings-gui'), options);
+				document.querySelector('.tu-settings-close').onclick = toggleVisibility;
             }
             chatInputBtns = document.querySelector('.chat-input__buttons-container').children[0];
-            if (!(document.querySelector('.tmt-settings-button'))) {
+            if (!(document.querySelector('.tu-settings-button'))) {
                 chatInputBtns.insertAdjacentHTML('beforeend', components.icons.settings);
-                document.querySelector('.tmt-settings-button').onclick = toggleVisibility;
+                document.querySelector('.tu-settings-button').onclick = toggleVisibility;
             }
         }
     });
@@ -158,8 +158,8 @@ function chatPurge() {
 
 function cardTimeout() {
     let name = findReact(document.querySelector('.viewer-card-layer'), 2).memoizedProps.viewerCardOptions.targetLogin;
-    let time = this.getAttribute('data-tmt-timeout');
-    let reason = document.querySelector('.tmt-ban-reason').value;
+    let time = this.getAttribute('data-tu-timeout');
+    let reason = document.querySelector('.tu-ban-reason').value;
     sendMessage('/timeout ' + name + ' ' + time + ' ' + reason);
 }
 
@@ -175,7 +175,7 @@ function addPurgeButton(el) {
 
 function addModCard() {
     document.querySelector('.viewer-card__actions').insertAdjacentHTML('beforeend', components.modCard.actions);
-    let timeouts = document.getElementsByClassName('tmt-timeout');
+    let timeouts = document.getElementsByClassName('tu-timeout');
     for (let i = 0; i < timeouts.length; i++) {
         timeouts[i].addEventListener('click', cardTimeout);
     }
@@ -224,7 +224,7 @@ function checkMessage() {
         }
         findReact(inputSelector, 2).memoizedProps.onValueUpdate('');
         inputSelector.value = '';
-        // check if tmt command or user alias
+        // check if tu command or user alias
         if (command === 'alias') {
             let err = false;
             let errTxt = 'Usage: /alias <name> <alias>';
@@ -302,7 +302,7 @@ function checkMessage() {
             sendMessage('/ban ' + parts.splice(1).join(' '));
         } else if (command == 'u') {
             sendMessage('/unban ' + parts.splice(1).join(' '));
-        } else if (command == 'p') {
+        } else if (command == 'p' || command == 'purge') {
             sendMessage('/timeout ' + parts.splice(1).join(' ') + ' 1');
         } else if (command == 't') {
             let ext;
@@ -358,14 +358,14 @@ function getJSON(url, callback) {
 
 function addNameHistory() {
     let tfr = document.createElement('div');
-    tfr.id = 'tmt-name-container';
+    tfr.id = 'tu-name-container';
     tfr.setAttribute('class', 'tw-flex tw-flex-row');
     let dn = document.querySelector('.viewer-card__display-name');
     dn.children[0].classList.add('tw-flex');
     dn.appendChild(tfr);
     tfr.appendChild(dn.children[0]);
     tfr.insertAdjacentHTML('beforeend', components.viewerCard.history);
-    document.querySelector('.tmt-name-history-button').onclick = toggleVisibility;
+    document.querySelector('.tu-name-history-button').onclick = toggleVisibility;
 }
 
 function addAge() {
@@ -393,7 +393,7 @@ function getNameHistory(id) {
 }
 
 let updateNameHistory = function(data) {
-    let hl = document.querySelector('.tmt-name-history-list');
+    let hl = document.querySelector('.tu-name-history-list');
     hl.children[1].remove();
     if (data.length === 0) {
         let p = document.createElement('p');
@@ -418,10 +418,10 @@ function callUserApi(name, callback) {
 
 function toggleVisibility() {
     let toggle = document.querySelector('.' + this.getAttribute('data-toggle'));
-    if (toggle.classList.contains('tmt-hidden')) {
-        toggle.classList.remove('tmt-hidden');
+    if (toggle.classList.contains('tu-hidden')) {
+        toggle.classList.remove('tu-hidden');
     } else {
-        toggle.classList.add('tmt-hidden');
+        toggle.classList.add('tu-hidden');
     }
 }
 

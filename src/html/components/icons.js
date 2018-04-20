@@ -16,7 +16,7 @@ const purge = `
 </button>`;
 
 const settings = `
-<button class="tw-button-icon tmt-settings-button" data-toggle="tmt-settings-gui">
+<button class="tw-button-icon tu-settings-button" data-toggle="tu-settings-gui">
 	<span class="tw-button-icon__icon">
 		<figure class="tw-svg">
 			<svg class="tw-svg__asset tw-svg__asset--viewerlist tw-svg__asset--inherit" width="16px" height="16px" version="1.1" viewBox="0 0 16 16" x="0px" y="0px">
