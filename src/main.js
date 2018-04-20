@@ -1,4 +1,5 @@
-import components from "./html/components";
+import components from './html/components';
+import draggable from 'draggable';
 
 let config = {
     attributes: false,
@@ -17,6 +18,9 @@ let chatSendBtn;
 let onlineFriends;
 let friendList = [];
 let foundFriends = false;
+let chatInputBtns;
+let topNav;
+let mainPage;
 
 let twitchCommands = ['help', 'w', 'me', 'disconnect', 'mods', 'color', 'commercial', 'mod', 'unmod', 'ban', 'unban', 'timeout', 'untimeout', 'slow', 'slowoff', 'r9kbeta', 'r9kbetaoff', 'emoteonly', 'emoteonlyoff', 'clear', 'subscribers', 'subscribersoff', 'followers', 'followersoff', 'host', 'unhost'];
 let aliases = {};
@@ -55,20 +59,19 @@ let chatObserver = new MutationObserver(function(mutations) {
                 }
                 // All user actions
                 if (addedNode.classList.contains('viewer-card-layer__draggable')) {
-					let name = findReact(document.querySelector('.viewer-card-layer'), 2).memoizedProps.viewerCardOptions.targetLogin;
+                    let name = findReact(document.querySelector('.viewer-card-layer'), 2).memoizedProps.viewerCardOptions.targetLogin;
                     let check = setInterval(function() {
                         if (document.querySelector('.viewer-card')) {
                             clearInterval(check);
                             addNameHistory();
                             addAge();
-							updateCardInfo(name);
+                            updateCardInfo(name);
                         }
                     }, 50);
                 }
                 if (addedNode.classList.contains('chat-line__message')) {
                     let message = findReact(addedNode);
                     let from = message.memoizedProps.message.user.userDisplayName;
-					console.log(localStorage.tmtHighlightFriend);
                     if (localStorage.tmtHighlightFriend != 'false' && friendList.includes(from) && !(addedNode.classList.contains('ffz-mentioned'))) {
                         addedNode.classList.add('tmt-highlight-friend');
                     }
@@ -109,21 +112,41 @@ let chatLoaded = new MutationObserver(function(mutations) {
             chatRoom = findReactChat(chatSelector);
             chatObserver.observe(chatSelector, config);
             inputSelector = document.querySelector('[data-test-selector="chat-input"]');
+            inputSelector.onkeydown = checkKey;
             chatSendBtn = document.querySelector('[data-test-selector="chat-send-button"]');
+            chatSendBtn.onclick = checkMessage;
             chatList = document.querySelector('.chat-list__lines').SimpleBar.contentEl.children[0];
             onlineFriends = document.querySelector('.online-friends');
             if (!foundFriends && friendList.length === 0) {
                 getFriendList();
             }
-            chatSendBtn.onclick = checkMessage;
-            inputSelector.onkeydown = checkKey;
+            topNav = document.querySelector('.top-nav');
+            mainPage = topNav.parentElement;
+            if (!(document.querySelector('.tmt-settings-gui'))) {
+                mainPage.insertAdjacentHTML('beforeend', components.settings.gui);
+				let options = {
+					setCursor: true,
+					limit: mainPage
+				};
+				new draggable(document.querySelector('.tmt-settings-gui'), options);
+				document.querySelector('.tmt-settings-close').onclick = toggleVisibility;
+            }
+            chatInputBtns = document.querySelector('.chat-input__buttons-container').children[0];
+            if (!(document.querySelector('.tmt-settings-button'))) {
+                chatInputBtns.insertAdjacentHTML('beforeend', components.icons.settings);
+                document.querySelector('.tmt-settings-button').onclick = toggleVisibility;
+            }
         }
     });
 });
 chatLoaded.observe(document.body, config);
 
 var css = document.createElement('link');
-css.href = 'https://rawgit.com/ColossalPercy/twitch_mod_tools/master/src/styles/styles.css';
+if (localStorage.tmtDev == 'true') {
+    css.href = 'http://127.0.0.1:3000/src/styles/styles.css';
+} else {
+    css.href = 'https://rawgit.com/ColossalPercy/twitch_mod_tools/master/src/styles/styles.css';
+}
 css.type = 'text/css';
 css.rel = 'stylesheet';
 document.getElementsByTagName('head')[0].appendChild(css);
@@ -196,28 +219,28 @@ function checkMessage() {
         let parts = msg.split(' ');
         let command = parts[0].toLowerCase();
 
-		if (twitchCommands.indexOf(command) > -1) {
-			return;
-		}
-		findReact(inputSelector, 2).memoizedProps.onValueUpdate('');
-		inputSelector.value = '';
+        if (twitchCommands.indexOf(command) > -1) {
+            return;
+        }
+        findReact(inputSelector, 2).memoizedProps.onValueUpdate('');
+        inputSelector.value = '';
         // check if tmt command or user alias
         if (command === 'alias') {
-			let err = false;
+            let err = false;
             let errTxt = 'Usage: /alias <name> <alias>';
-			let name, alias;
-			if (parts.length > 1) {
-            	name = parts[1].toLowerCase();
-            	alias = parts.splice(2).join(' ');
-			} else {
-				err = true;
-			}
+            let name, alias;
+            if (parts.length > 1) {
+                name = parts[1].toLowerCase();
+                alias = parts.splice(2).join(' ');
+            } else {
+                err = true;
+            }
             if (name) {
-	            // check if a default twitch command
-	            if (twitchCommands.includes(name)) {
-	                err = true;
-					errTxt = "Can't use a Twitch command as an alias!";
-	            } else if (name === 'delete' && alias) {
+                // check if a default twitch command
+                if (twitchCommands.includes(name)) {
+                    err = true;
+                    errTxt = "Can't use a Twitch command as an alias!";
+                } else if (name === 'delete' && alias) {
                     if (aliases.hasOwnProperty(alias)) {
                         delete aliases[alias];
                         sendStatus('Removed alias: ' + alias);
@@ -276,21 +299,20 @@ function checkMessage() {
         } else if (aliases.hasOwnProperty(command)) {
             sendMessage(aliases[command]);
         } else if (command == 'b') {
-			sendMessage('/ban ' + parts.splice(1).join(' '));
-		} else if (command == 'u') {
-			sendMessage('/unban ' + parts.splice(1).join(' '));
-		}
-		else if (command == 'p') {
-			sendMessage('/timeout ' + parts.splice(1).join(' ') + ' 1');
-		} else if (command == 't') {
-			let ext;
-			if (parts.length == 2) {
-				ext = parts[1] + ' 600';
-			} else {
-				ext = parts.splice(1).join(' ');
-			}
-			sendMessage('/timeout ' + ext);
-		}
+            sendMessage('/ban ' + parts.splice(1).join(' '));
+        } else if (command == 'u') {
+            sendMessage('/unban ' + parts.splice(1).join(' '));
+        } else if (command == 'p') {
+            sendMessage('/timeout ' + parts.splice(1).join(' ') + ' 1');
+        } else if (command == 't') {
+            let ext;
+            if (parts.length == 2) {
+                ext = parts[1] + ' 600';
+            } else {
+                ext = parts.splice(1).join(' ');
+            }
+            sendMessage('/timeout ' + ext);
+        }
     }
 }
 
@@ -343,7 +365,7 @@ function addNameHistory() {
     dn.appendChild(tfr);
     tfr.appendChild(dn.children[0]);
     tfr.insertAdjacentHTML('beforeend', components.viewerCard.history);
-    document.getElementById('tmt-name-history-button').onclick = toggleVisibility;
+    document.querySelector('.tmt-name-history-button').onclick = toggleVisibility;
 }
 
 function addAge() {
@@ -354,15 +376,15 @@ function addAge() {
 }
 
 function updateCardInfo(name) {
-	callUserApi(name, updateCardAge);
+    callUserApi(name, updateCardAge);
 }
 
 let updateCardAge = function(data) {
-	let date = data.created_at;
-	getNameHistory(data._id);
+    let date = data.created_at;
+    getNameHistory(data._id);
     let d = new Date(date);
     let created = d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear();
-    document.getElementById('viewer-card__profile-age').innerHTML = 'Created on: ' + created;
+    document.querySelector('.viewer-card__profile-age').innerHTML = 'Created on: ' + created;
 };
 
 function getNameHistory(id) {
@@ -371,21 +393,21 @@ function getNameHistory(id) {
 }
 
 let updateNameHistory = function(data) {
-	let hl = document.getElementById('tmt-name-history-list');
-	hl.children[1].remove();
-	if (data.length === 0) {
-		let p = document.createElement('p');
-		p.innerHTML = 'No name history.';
-		p.setAttribute('class', 'tw-pd-l-1');
-		hl.appendChild(p);
-	} else {
-		for (let i in data) {
-		    let p = document.createElement('p');
-		    p.innerHTML = data[i].username_old;
-			p.setAttribute('class', 'tw-pd-l-1');
-		    hl.appendChild(p);
-		}
-	}
+    let hl = document.querySelector('.tmt-name-history-list');
+    hl.children[1].remove();
+    if (data.length === 0) {
+        let p = document.createElement('p');
+        p.innerHTML = 'No name history.';
+        p.setAttribute('class', 'tw-pd-l-1');
+        hl.appendChild(p);
+    } else {
+        for (let i in data) {
+            let p = document.createElement('p');
+            p.innerHTML = data[i].username_old;
+            p.setAttribute('class', 'tw-pd-l-1');
+            hl.appendChild(p);
+        }
+    }
 };
 
 function callUserApi(name, callback) {
@@ -395,7 +417,7 @@ function callUserApi(name, callback) {
 }
 
 function toggleVisibility() {
-    let toggle = document.getElementById(this.getAttribute('data-toggle'));
+    let toggle = document.querySelector('.' + this.getAttribute('data-toggle'));
     if (toggle.classList.contains('tmt-hidden')) {
         toggle.classList.remove('tmt-hidden');
     } else {
