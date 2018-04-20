@@ -68,7 +68,8 @@ let chatObserver = new MutationObserver(function(mutations) {
                 if (addedNode.classList.contains('chat-line__message')) {
                     let message = findReact(addedNode);
                     let from = message.memoizedProps.message.user.userDisplayName;
-                    if (friendList.includes(from) && !(addedNode.classList.contains('ffz-mentioned'))) {
+					console.log(localStorage.tmtHighlightFriend);
+                    if (localStorage.tmtHighlightFriend != 'false' && friendList.includes(from) && !(addedNode.classList.contains('ffz-mentioned'))) {
                         addedNode.classList.add('tmt-highlight-friend');
                     }
 
