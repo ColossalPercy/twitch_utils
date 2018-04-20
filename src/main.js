@@ -16,7 +16,7 @@ let inputSelector;
 let chatSendBtn;
 let onlineFriends;
 let friendList = [];
-
+let foundFriends = false;
 
 let twitchCommands = ['help', 'w', 'me', 'disconnect', 'mods', 'color', 'commercial', 'mod', 'unmod', 'ban', 'unban', 'timeout', 'untimeout', 'slow', 'slowoff', 'r9kbeta', 'r9kbetaoff', 'emoteonly', 'emoteonlyoff', 'clear', 'subscribers', 'subscribersoff', 'followers', 'followersoff', 'host', 'unhost'];
 let aliases = {};
@@ -34,6 +34,7 @@ let chatObserver = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
         mutation.addedNodes.forEach(function(addedNode) {
             if (addedNode.nodeName == 'DIV') {
+                // Moderator actions
                 if (chatRoom.isCurrentUserModerator) {
                     if (addedNode.classList.contains('chat-line__message')) {
                         if (findReact(addedNode).memoizedProps.showModerationIcons === true) {
@@ -42,24 +43,36 @@ let chatObserver = new MutationObserver(function(mutations) {
                     }
                     if (addedNode.classList.contains('viewer-card-layer__draggable')) {
                         let name = findReact(document.querySelector('.viewer-card-layer'), 2).memoizedProps.viewerCardOptions.targetLogin;
-                        if (name != chatRoom.currentUserLogin)
-                            cardReady(function() {
-                                addModCard();
-                            });
+                        if (name != chatRoom.currentUserLogin) {
+                            let check = setInterval(function() {
+                                if (document.querySelector('.viewer-card')) {
+                                    clearInterval(check);
+                                    addModCard();
+                                }
+                            }, 50);
+                        }
                     }
                 }
+                // All user actions
                 if (addedNode.classList.contains('viewer-card-layer__draggable')) {
-                    cardReady(function() {
-                        let name = findReact(document.querySelector('.viewer-card-layer'), 2).memoizedProps.viewerCardOptions.targetLogin;
-                        let data = callUserApi(name);
-                        addAge(data.created_at);
-                        if (name != chatRoom.currentUserLogin) {
-                            addNameHistory(data._id);
+					let name = findReact(document.querySelector('.viewer-card-layer'), 2).memoizedProps.viewerCardOptions.targetLogin;
+                    let check = setInterval(function() {
+                        if (document.querySelector('.viewer-card')) {
+                            clearInterval(check);
+                            addNameHistory();
+                            addAge();
+							updateCardInfo(name);
                         }
-                    });
+                    }, 50);
                 }
                 if (addedNode.classList.contains('chat-line__message')) {
-                    let parts = findReact(addedNode).memoizedProps.message.messageParts;
+                    let message = findReact(addedNode);
+                    let from = message.memoizedProps.message.user.userDisplayName;
+                    if (friendList.includes(from) && !(addedNode.classList.contains('ffz-mentioned'))) {
+                        addedNode.classList.add('tmt-highlight-friend');
+                    }
+
+                    let parts = message.memoizedProps.message.messageParts;
                     let imgs = addedNode.getElementsByTagName('img');
                     let emotes = [];
                     for (let t = 0; t < imgs.length; t++) {
@@ -98,12 +111,21 @@ let chatLoaded = new MutationObserver(function(mutations) {
             chatSendBtn = document.querySelector('[data-test-selector="chat-send-button"]');
             chatList = document.querySelector('.chat-list__lines').SimpleBar.contentEl.children[0];
             onlineFriends = document.querySelector('.online-friends');
+            if (!foundFriends && friendList.length === 0) {
+                getFriendList();
+            }
             chatSendBtn.onclick = checkMessage;
             inputSelector.onkeydown = checkKey;
         }
     });
 });
 chatLoaded.observe(document.body, config);
+
+var css = document.createElement('link');
+css.href = 'https://rawgit.com/ColossalPercy/twitch_mod_tools/master/src/styles/styles.css';
+css.type = 'text/css';
+css.rel = 'stylesheet';
+document.getElementsByTagName('head')[0].appendChild(css);
 
 function chatPurge() {
     let name = getUserName(this.parentElement.parentElement);
@@ -125,35 +147,6 @@ function addPurgeButton(el) {
     el.querySelector('[data-test-selector="chat-timeout-button"]').insertAdjacentHTML('afterend', components.icons.purge);
     let btn = el.querySelector('[data-test-selector="chat-purge-button"]');
     btn.addEventListener('click', chatPurge);
-}
-
-function cardReady(callback) {
-    let loaded = 0;
-    let check = setInterval(function() {
-        if (document.querySelector('.viewer-card')) {
-            loaded++;
-            clearInterval(check);
-            if (loaded == 1) {
-                callback();
-            }
-        }
-    }, 100);
-}
-
-function callUserApi(name) {
-    let url = 'https://api.twitch.tv/kraken/users/' + name + '?client_id=5ojgte4x1dp72yumoc8fp9xp44nhdj';
-    let data = getJSON(url);
-    return data;
-}
-
-function addAge(date) {
-    document.querySelector('.viewer-card__banner').classList.remove('tw-align-center');
-    let dn = document.querySelector('.viewer-card__display-name');
-    dn.classList.remove('tw-align-items-center');
-    dn.insertAdjacentHTML('beforeend', components.viewerCard.age);
-    let d = new Date(date);
-    let created = d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear();
-    document.getElementById('viewer-card__profile-age').innerHTML = 'Created on: ' + created;
 }
 
 function addModCard() {
@@ -202,22 +195,28 @@ function checkMessage() {
         let parts = msg.split(' ');
         let command = parts[0].toLowerCase();
 
+		if (twitchCommands.indexOf(command) > -1) {
+			return;
+		}
+		findReact(inputSelector, 2).memoizedProps.onValueUpdate('');
+		inputSelector.value = '';
         // check if tmt command or user alias
         if (command === 'alias') {
-
-            let name = parts[1].toLowerCase();
-            let alias = parts.splice(2).join(' ');
-
-            // check if a default twitch command
-            if (twitchCommands.includes(name)) {
-                return;
-            }
-            findReact(inputSelector, 2).memoizedProps.onValueUpdate('');
-            inputSelector.value = '';
-            let err = false;
-            let errTxt;
+			let err = false;
+            let errTxt = 'Usage: /alias <name> <alias>';
+			let name, alias;
+			if (parts.length > 1) {
+            	name = parts[1].toLowerCase();
+            	alias = parts.splice(2).join(' ');
+			} else {
+				err = true;
+			}
             if (name) {
-                if (name === 'delete' && alias) {
+	            // check if a default twitch command
+	            if (twitchCommands.includes(name)) {
+	                err = true;
+					errTxt = "Can't use a Twitch command as an alias!";
+	            } else if (name === 'delete' && alias) {
                     if (aliases.hasOwnProperty(alias)) {
                         delete aliases[alias];
                         sendStatus('Removed alias: ' + alias);
@@ -266,19 +265,31 @@ function checkMessage() {
                 err = true;
             }
             if (err === true) {
-                errTxt = "Usage: /alias <name> <alias>";
                 if (name === 'delete') {
-                    errTxt = "Usage: /alias delete <name>";
+                    errTxt = 'Usage: /alias delete <name>';
                 } else if (name === 'importffz') {
-                    errTxt = "No FFZ aliases found!";
+                    errTxt = 'No FFZ aliases found!';
                 }
                 sendStatus(errTxt);
             }
         } else if (aliases.hasOwnProperty(command)) {
-            findReact(inputSelector, 2).memoizedProps.onValueUpdate('');
-            inputSelector.value = '';
             sendMessage(aliases[command]);
-        }
+        } else if (command == 'b') {
+			sendMessage('/ban ' + parts.splice(1).join(' '));
+		} else if (command == 'u') {
+			sendMessage('/unban ' + parts.splice(1).join(' '));
+		}
+		else if (command == 'p') {
+			sendMessage('/timeout ' + parts.splice(1).join(' ') + ' 1');
+		} else if (command == 't') {
+			let ext;
+			if (parts.length == 2) {
+				ext = parts[1] + ' 600';
+			} else {
+				ext = parts.splice(1).join(' ');
+			}
+			sendMessage('/timeout ' + ext);
+		}
     }
 }
 
@@ -303,7 +314,6 @@ function getFriendList() {
     for (let i = 0; i < friends.length; i++) {
         friendList[i] = friends[i].node.displayName;
     }
-    console.log(friendList);
 }
 
 function changeMessage() {
@@ -312,23 +322,83 @@ function changeMessage() {
     inputSelector.value = newMessage;
 }
 
-function getJSON(url) {
-    let Httpreq = new XMLHttpRequest(); // a new request
-    Httpreq.open("GET", url, false);
-    Httpreq.send(null);
-    return JSON.parse(Httpreq.responseText);
+function getJSON(url, callback) {
+    let xhr = new XMLHttpRequest(); // a new request
+    xhr.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            callback.apply(this, [JSON.parse(xhr.responseText)]);
+        }
+    };
+    xhr.open("GET", url, true);
+    xhr.send(null);
 }
 
-function addNameHistory(id) {
+function addNameHistory() {
+    let tfr = document.createElement('div');
+    tfr.id = 'tmt-name-container';
+    tfr.setAttribute('class', 'tw-flex tw-flex-row');
+    let dn = document.querySelector('.viewer-card__display-name');
+    dn.children[0].classList.add('tw-flex');
+    dn.appendChild(tfr);
+    tfr.appendChild(dn.children[0]);
+    tfr.insertAdjacentHTML('beforeend', components.viewerCard.history);
+    document.getElementById('tmt-name-history-button').onclick = toggleVisibility;
+}
+
+function addAge() {
+    document.querySelector('.viewer-card__banner').classList.remove('tw-align-center');
+    let dn = document.querySelector('.viewer-card__display-name');
+    dn.classList.remove('tw-align-items-center');
+    dn.insertAdjacentHTML('beforeend', components.viewerCard.age);
+}
+
+function updateCardInfo(name) {
+	callUserApi(name, updateCardAge);
+}
+
+let updateCardAge = function(data) {
+	let date = data.created_at;
+	getNameHistory(data._id);
+    let d = new Date(date);
+    let created = d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear();
+    document.getElementById('viewer-card__profile-age').innerHTML = 'Created on: ' + created;
+};
+
+function getNameHistory(id) {
     let url = 'https://twitch-tools.rootonline.de/username_changelogs_search.php?q=' + id + '&format=json';
-    let data = getJSON(url);
-    if (data.length > 0) {
-        document.querySelector('.viewer-card__actions').children[0].children[1].insertAdjacentHTML('afterend', components.viewerCard.history);
-        for (let i in data) {
-            let option = document.createElement('option');
-            option.text = data[i].username_old;
-            document.querySelector('.tmt-name-history').add(option);
-        }
+    getJSON(url, updateNameHistory);
+}
+
+let updateNameHistory = function(data) {
+	let hl = document.getElementById('tmt-name-history-list');
+	hl.children[1].remove();
+	if (data.length === 0) {
+		let p = document.createElement('p');
+		p.innerHTML = 'No name history.';
+		p.setAttribute('class', 'tw-pd-l-1');
+		hl.appendChild(p);
+	} else {
+		for (let i in data) {
+		    let p = document.createElement('p');
+		    p.innerHTML = data[i].username_old;
+			p.setAttribute('class', 'tw-pd-l-1');
+		    hl.appendChild(p);
+		}
+	}
+};
+
+function callUserApi(name, callback) {
+    let url = 'https://api.twitch.tv/kraken/users/' + name + '?client_id=5ojgte4x1dp72yumoc8fp9xp44nhdj';
+    let data = getJSON(url, callback);
+    return data;
+}
+
+function toggleVisibility() {
+    let toggle = document.getElementById(this.getAttribute('data-toggle'));
+    if (toggle.classList.contains('tmt-hidden')) {
+        toggle.classList.remove('tmt-hidden');
+    } else {
+        toggle.classList.add('tmt-hidden');
     }
 }
 
