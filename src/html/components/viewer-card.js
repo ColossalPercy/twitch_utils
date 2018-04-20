@@ -9,7 +9,7 @@ const history = `<div class="tw-flex">
 				</svg>
 			</figure>
 		</button>
-		<div class="tw-balloon tw-balloon tw-balloon--down tw-balloon--right tw-block tw-absolute tmt-hidden" id="tmt-name-history-balloon">
+		<div class="tw-balloon tw-balloon tw-balloon--down tw-balloon--center tw-block tw-absolute tmt-hidden" id="tmt-name-history-balloon">
 			<div class="tw-balloon__tail tw-overflow-hidden tw-absolute">
 				<div class="tw-balloon__tail-symbol tw-border-t tw-border-r tw-border-b tw-border-l tw-border-radius-small tw-c-background tw-absolute"></div>
 			</div>
