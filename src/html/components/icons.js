@@ -27,7 +27,47 @@ const settings = `
 	</span>
 </button>`;
 
+const block = `
+<div class="tw-relative">
+    <div class="tw-relative">
+        <div>
+            <button class="tu-block-button tw-button-icon" data-toggle="tu-block-settings">
+                <span class="tw-button-icon__icon">
+                    <figure class="tw-svg">
+                        <svg class="tw-svg__asset tw-svg__asset--inherit" height="16" viewbox="0 0 16 16" width="16">
+                            <path d="M8,1C4.13,1,1,4.13,1,8s3.13,7,7,7s7-3.13,7-7S11.87,1,8,1z M3,8c0-2.76,2.24-5,5-5 c1.02,0,1.97,0.31,2.76,0.83l-6.93,6.93C3.31,9.97,3,9.02,3,8z M8,13c-1.02,0-1.97-0.31-2.76-0.83l6.93-6.93 C12.69,6.03,13,6.98,13,8C13,10.76,10.76,13,8,13z"></path>
+                        </svg>
+                    </figure>
+                </span>
+            </button>
+        </div>
+        <div class="tu-block-settings tw-balloon tw-balloon--up tw-elevation-1 tw-absolute tu-hidden" style="margin-bottom:11px">
+            <div class="scrollable-area" data-simplebar="init">
+                <div>
+                    <div class="chat-settings tw-c-background tw-c-text tw-pd-2">
+                        <div class="tw-c-background tw-c-text tw-full-width tw-inline-flex tw-flex-column">
+                            <p class="tw-c-text-alt-2 tw-upcase">Blocked Users</p>
+                        </div>
+                        <div class="tu-block-user-list tw-border-t tw-mg-b-1 tw-mg-t-1"></div>
+                        <div class="tw-border-t tw-mg-b-1 tw-mg-t-1 tw-pd-t-1">
+                            <p>Click username above to unblock!</p>
+                        </div>
+                        <div class="tw-border-t">
+                            <div class="tw-mg-b-1 tw-mg-t-1">
+                                <button class="tu-block-add-user tw-button">
+                                    <span class="tw-button__icon">Block New User</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>`;
+
 export default {
     purge,
-	settings
+	settings,
+	block
 };

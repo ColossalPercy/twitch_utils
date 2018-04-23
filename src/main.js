@@ -21,6 +21,7 @@ let foundFriends = false;
 let chatInputBtns;
 let topNav;
 let mainPage;
+let blockedUsersList;
 
 let twitchCommands = ['help', 'w', 'me', 'disconnect', 'mods', 'color', 'commercial', 'mod', 'unmod', 'ban', 'unban', 'timeout', 'untimeout', 'slow', 'slowoff', 'r9kbeta', 'r9kbetaoff', 'emoteonly', 'emoteonlyoff', 'clear', 'subscribers', 'subscribersoff', 'followers', 'followersoff', 'host', 'unhost'];
 let aliases = {};
@@ -31,6 +32,14 @@ if (localStorage.tmtAliases) {
 let blockedEmotes = [];
 if (localStorage.tmtBlockedEmotes) {
     blockedEmotes = localStorage.tmtBlockedEmotes.split(',');
+}
+
+let blockedUsers = [];
+if (localStorage.twitchBlockList) {
+	blockedUsers = localStorage.twitchBlockList.split(',');
+	for (let i = 0; i < blockedUsers.length; i++) {
+            blockedUsers[i] = blockedUsers[i].toLowerCase();
+    }
 }
 
 //Mutation observer for each chat message
@@ -58,6 +67,7 @@ let chatObserver = new MutationObserver(function(mutations) {
                     }
                 }
                 // All user actions
+				// opened viewer card
                 if (addedNode.classList.contains('viewer-card-layer__draggable')) {
                     let name = findReact(document.querySelector('.viewer-card-layer'), 2).memoizedProps.viewerCardOptions.targetLogin;
                     let check = setInterval(function() {
@@ -69,13 +79,15 @@ let chatObserver = new MutationObserver(function(mutations) {
                         }
                     }, 50);
                 }
+				// recieve new message
                 if (addedNode.classList.contains('chat-line__message')) {
                     let message = findReact(addedNode);
                     let from = message.memoizedProps.message.user.userDisplayName;
+					// highlight friends
                     if (localStorage.tmtHighlightFriend != 'false' && friendList.includes(from) && !(addedNode.classList.contains('ffz-mentioned'))) {
                         addedNode.classList.add('tu-highlight-friend');
                     }
-
+					// block emotes
                     let parts = message.memoizedProps.message.messageParts;
                     let imgs = addedNode.getElementsByTagName('img');
                     let emotes = [];
@@ -98,48 +110,76 @@ let chatObserver = new MutationObserver(function(mutations) {
                             emoteN++;
                         }
                     }
+					// block Users
+					if (blockedUsers.includes(from.toLowerCase())) {
+						chatList.removeChild(addedNode);
+					}
                 }
             }
         });
     });
 });
 
-//Mutation observer for chat loading
-let chatLoaded = new MutationObserver(function(mutations) {
+//Mutation observer for elements loading
+let elLoader = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
         chatSelector = document.querySelector('[data-test-selector="chat-room-component-layout"]');
         if (chatSelector) {
+            // get the chat room
             chatRoom = findReactChat(chatSelector);
             chatObserver.observe(chatSelector, config);
+            // get chat text input
             inputSelector = document.querySelector('[data-test-selector="chat-input"]');
             inputSelector.onkeydown = checkKey;
+            // get chat send button
             chatSendBtn = document.querySelector('[data-test-selector="chat-send-button"]');
             chatSendBtn.onclick = checkMessage;
+            // get chat messages list
             chatList = document.querySelector('.chat-list__lines').SimpleBar.contentEl.children[0];
+            // get online friend list
             onlineFriends = document.querySelector('.online-friends');
             if (!foundFriends && friendList.length === 0) {
                 getFriendList();
             }
+            // get top nav bar
             topNav = document.querySelector('.top-nav');
+            // get main page
             mainPage = topNav.parentElement;
+            // add settings gui
             if (!(document.querySelector('.tu-settings-gui'))) {
                 mainPage.insertAdjacentHTML('beforeend', components.settings.gui);
-				let options = {
-					setCursor: true,
-					limit: mainPage
-				};
-				new draggable(document.querySelector('.tu-settings-gui'), options);
-				document.querySelector('.tu-settings-close').onclick = toggleVisibility;
+                let options = {
+                    setCursor: true,
+                    limit: mainPage
+                };
+                new draggable(document.querySelector('.tu-settings-gui'), options);
+                document.querySelector('.tu-settings-close').onclick = toggleVisibility;
             }
+            // add settings button
             chatInputBtns = document.querySelector('.chat-input__buttons-container').children[0];
             if (!(document.querySelector('.tu-settings-button'))) {
                 chatInputBtns.insertAdjacentHTML('beforeend', components.icons.settings);
                 document.querySelector('.tu-settings-button').onclick = toggleVisibility;
             }
+			// add twitch blocker
+            if (!(document.querySelector('.tu-block-button'))) {
+                chatInputBtns.insertAdjacentHTML('beforeend', components.icons.block);
+                document.querySelector('.tu-block-button').onclick = toggleVisibility;
+				document.querySelector('.tu-block-add-user').onclick = addBlockedUser;
+				blockedUsersList = document.querySelector('.tu-block-user-list');
+                blockedUsers.forEach(function(id) {
+                    var user = `
+            			<div class="tw-mg-t-1" >
+                			<button class="blocked-user-${id}">${id}</button>
+            			</div>`;
+                    blockedUsersList.insertAdjacentHTML('beforeend', user);
+                    document.querySelector('.blocked-user-' + id).onclick = removeBlockedUser;
+                });
+            }
         }
     });
 });
-chatLoaded.observe(document.body, config);
+elLoader.observe(document.body, config);
 
 var css = document.createElement('link');
 if (localStorage.tmtDev == 'true') {
@@ -170,14 +210,14 @@ function sendMessage(m) {
 function addPurgeButton(el) {
     el.querySelector('[data-test-selector="chat-timeout-button"]').insertAdjacentHTML('afterend', components.icons.purge);
     let btn = el.querySelector('[data-test-selector="chat-purge-button"]');
-    btn.addEventListener('click', chatPurge);
+    btn.onclick = chatPurge;
 }
 
 function addModCard() {
     document.querySelector('.viewer-card__actions').insertAdjacentHTML('beforeend', components.modCard.actions);
     let timeouts = document.getElementsByClassName('tu-timeout');
     for (let i = 0; i < timeouts.length; i++) {
-        timeouts[i].addEventListener('click', cardTimeout);
+        timeouts[i].onclick = cardTimeout;
     }
 }
 
@@ -422,6 +462,31 @@ function toggleVisibility() {
         toggle.classList.remove('tu-hidden');
     } else {
         toggle.classList.add('tu-hidden');
+    }
+}
+
+function addBlockedUser() {
+        var newUser = prompt("Add a new user to the block list:").toLowerCase();
+        if (newUser !== null) {
+            blockedUsers.push(newUser);
+            let addUser = '<div class="tw-mg-t-1"><button class="blocked-user-' + newUser + '">' + newUser + '</button></div>';
+			blockedUsersList.insertAdjacentHTML('beforeend', addUser);
+            document.querySelector('.blocked-user-' + newUser).onclick = removeBlockedUser;
+            localStorage.twitchBlockList = blockedUsers;
+            console.log('Added ' + newUser + ' to the block list.');
+        }
+    }
+
+function removeBlockedUser(event) {
+	var removeID = event.target.innerHTML;
+    var approved = confirm("Are you sure you wish to unblock " + removeID + "?");
+
+    if (approved === true) {
+        console.log('Unblocked ' + removeID + '!');
+        blockedUsers.splice(blockedUsers.indexOf(removeID), 1);
+        event.target.onclick = null;
+        localStorage.twitchBlockList = blockedUsers;
+        blockedUsersList.removeChild(event.target.parentElement);
     }
 }
 
