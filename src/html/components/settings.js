@@ -1,5 +1,5 @@
 const gui = `
-<div class="tu-settings-gui tw-overflow-hidden tw-border-1 tw-absolute tw-c-background tw-elevation-4 tu-hidden">
+<div class="tu-settings-gui tw-overflow-hidden tw-border-1 tw-absolute tw-c-background tw-elevation-4 tw-hide">
 	<div class="tu-settings-header tw-flex tw-theme--dark tw-justify-content-between tw-pd-1 tw-border-b">
 		<div class="tw-flex tw-flex-row tw-c-text">
 			<figure class="tw-svg tw-mg-r-1">
@@ -50,7 +50,7 @@ export function checkbox(name, label, desc, def) {
 			<label class="tw-checkbox__label" for="${name}">${label}</label>
 
 		</div>
-		<p class="tw-pd-l-3 tu-setting-desc">${desc}</p>
+		<p class="tw-pd-l-3 tu-settings-desc">${desc}</p>
 	</div>`;
 	return checkbox;
 }

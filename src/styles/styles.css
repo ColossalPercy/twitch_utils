@@ -23,7 +23,7 @@
 
 .tu-settings-header {
     background-color: #4b367c;
-    cursor: move;
+    /* cursor: move; */
 }
 
 .tu-settings-tab-container > li {
@@ -54,6 +54,10 @@
     background-color: #201c2b;
 }
 
-.tu-setting-desc {
+.tu-settings-main {
+    height: calc(65vh - 112px);
+}
+
+.tu-settings-desc {
     color: #808080;
 }

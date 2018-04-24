@@ -22,8 +22,6 @@ export default function() {
         curTab.append(key);
         curTab.onclick = changeActiveTab;
     }
-    let height = guiContainer.offsetHeight - headContainer.offsetHeight - tabContainer.offsetHeight;
-    mainContainer.style.height = height + 'px';
 
     function changeActiveTab(event) {
         let key = event.target.innerText;
@@ -49,31 +47,5 @@ export default function() {
             }
             n++;
         }
-    }
-
-    function createEl(obj, el) {
-        console.log(obj);
-        console.log(el);
-        for (let key in obj) {
-            let a = document.createElement(key);
-            for (let atr in obj[key]) {
-                if (atr == 'text') {
-                    a.innerHTML = obj[key][atr];
-                } else if (atr != 'children') {
-                    a.setAttribute(atr, obj[key][atr]);
-                }
-                if (el) {
-                    el.append(a);
-                }
-                if (atr == 'children') {
-                    if (el) {
-                        createEl(obj[key][atr], el);
-                    } else {
-                        createEl(obj[key][atr], a);
-                    }
-                }
-            }
-        }
-        return el;
     }
 }

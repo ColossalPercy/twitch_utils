@@ -1,5 +1,4 @@
 import components from './html/components';
-import draggable from 'draggable';
 import settings from './settings';
 
 let config = {
@@ -149,11 +148,6 @@ let elLoader = new MutationObserver(function(mutations) {
             // add settings gui
             if (!(document.querySelector('.tu-settings-gui'))) {
                 mainPage.insertAdjacentHTML('beforeend', components.settings.gui);
-                let options = {
-                    limit: mainPage,
-                    handle: document.querySelector('.tu-settings-header')
-                };
-                new draggable(document.querySelector('.tu-settings-gui'), options);
                 document.querySelector('.tu-settings-close').onclick = toggleVisibility;
                 settings();
             }
@@ -210,7 +204,7 @@ function sendMessage(m) {
 }
 
 function addPurgeButton(el) {
-    el.querySelector('[data-test-selector="chat-timeout-button"]').insertAdjacentHTML('afterend', components.icons.purge);
+    el.querySelector('[data-test-selector="chat-timeout-button"]').parentElement.insertAdjacentHTML('beforeend', components.icons.purge);
     let btn = el.querySelector('[data-test-selector="chat-purge-button"]');
     btn.onclick = chatPurge;
 }
@@ -460,10 +454,10 @@ function callUserApi(name, callback) {
 
 function toggleVisibility() {
     let toggle = document.querySelector('.' + this.getAttribute('data-toggle'));
-    if (toggle.classList.contains('tu-hidden')) {
-        toggle.classList.remove('tu-hidden');
+    if (toggle.classList.contains('tw-hide')) {
+        toggle.classList.remove('tw-hide');
     } else {
-        toggle.classList.add('tu-hidden');
+        toggle.classList.add('tw-hide');
     }
 }
 
