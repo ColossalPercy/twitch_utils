@@ -11,13 +11,13 @@
 }
 
 .tu-settings-gui {
-    width: 40vw;
-    height: 50vh;
+    width: 60vw;
+    height: 65vh;
     min-width: 500px;
     min-height: 300px;
     z-index: 999999;
-    top: calc(50vh - 150px);
-    left: calc(50vw - 250px);
+    left: 20vw;
+    top: 17vh;
     user-select: none;
 }
 
@@ -30,14 +30,28 @@
     background-color: #e9e9e9;
 }
 
+.tw-theme--dark .tu-settings-tab-container > li {
+    background-color: #0e0c13;
+}
+
 .tu-settings-tab-container > li:hover {
     cursor: pointer;
     background-color: #fff;
 }
 
+.tw-theme--dark .tu-settings-tab-container > li:hover {
+    cursor: pointer;
+    background-color: #201c2b;
+}
+
 .tu-settings-tab-container > li.tu-settings-tab-active {
     cursor: default;
     background-color: #fff;
+}
+
+.tw-theme--dark .tu-settings-tab-container > li.tu-settings-tab-active {
+    cursor: default;
+    background-color: #201c2b;
 }
 
 .tu-setting-desc {
