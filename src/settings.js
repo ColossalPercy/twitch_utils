@@ -2,6 +2,8 @@ import * as structure from './settings-struc';
 import * as components from './html/components/settings';
 
 export default function() {
+    let guiContainer = document.querySelector('.tu-settings-gui');
+    let headContainer = document.querySelector('.tu-settings-header');
     let tabContainer = document.querySelector('.tu-settings-tab-container');
     let mainContainer = document.querySelector('.tu-settings-main');
     for (let key in structure) {
@@ -20,6 +22,8 @@ export default function() {
         curTab.append(key);
         curTab.onclick = changeActiveTab;
     }
+    let height = guiContainer.offsetHeight - headContainer.offsetHeight - tabContainer.offsetHeight;
+    mainContainer.style.height = height + 'px';
 
     function changeActiveTab(event) {
         let key = event.target.innerText;
