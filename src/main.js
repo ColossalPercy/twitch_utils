@@ -1,5 +1,6 @@
 import components from './html/components';
 import draggable from 'draggable';
+import settings from './settings';
 
 let config = {
     attributes: false,
@@ -149,11 +150,12 @@ let elLoader = new MutationObserver(function(mutations) {
             if (!(document.querySelector('.tu-settings-gui'))) {
                 mainPage.insertAdjacentHTML('beforeend', components.settings.gui);
                 let options = {
-                    setCursor: true,
-                    limit: mainPage
+                    limit: mainPage,
+                    handle: document.querySelector('.tu-settings-header')
                 };
                 new draggable(document.querySelector('.tu-settings-gui'), options);
                 document.querySelector('.tu-settings-close').onclick = toggleVisibility;
+                settings();
             }
             // add settings button
             chatInputBtns = document.querySelector('.chat-input__buttons-container').children[0];

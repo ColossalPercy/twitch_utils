@@ -7,14 +7,39 @@
 }
 
 .tu-hidden {
-    visibility: hidden;
+    visibility: hidden!important;
 }
 
 .tu-settings-gui {
-    width: 500px;
-    height: 300px;
+    width: 40vw;
+    height: 50vh;
+    min-width: 500px;
+    min-height: 300px;
     z-index: 999999;
     top: calc(50vh - 150px);
     left: calc(50vw - 250px);
     user-select: none;
+}
+
+.tu-settings-header {
+    background-color: #4b367c;
+    cursor: move;
+}
+
+.tu-settings-tab-container > li {
+    background-color: #e9e9e9;
+}
+
+.tu-settings-tab-container > li:hover {
+    cursor: pointer;
+    background-color: #fff;
+}
+
+.tu-settings-tab-container > li.tu-settings-tab-active {
+    cursor: default;
+    background-color: #fff;
+}
+
+.tu-setting-desc {
+    color: #808080;
 }

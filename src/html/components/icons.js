@@ -68,6 +68,6 @@ const block = `
 
 export default {
     purge,
-	settings,
-	block
+    settings,
+    block
 };
