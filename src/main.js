@@ -84,7 +84,7 @@ let chatObserver = new MutationObserver(function(mutations) {
                     let message = findReact(addedNode);
                     let from = message.memoizedProps.message.user.userDisplayName;
 					// highlight friends
-                    if (localStorage.tmtHighlightFriend != 'false' && friendList.includes(from) && !(addedNode.classList.contains('ffz-mentioned'))) {
+                    if (localStorage.tmtHighlightFriend == 'true' && friendList.includes(from) && !(addedNode.classList.contains('ffz-mentioned'))) {
                         addedNode.classList.add('tu-highlight-friend');
                     }
 					// block emotes
