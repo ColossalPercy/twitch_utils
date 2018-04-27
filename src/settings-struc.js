@@ -12,6 +12,12 @@ export const Chat = {
             name: "Moderator Purge Icon",
             desc: "Show a purge button in the moderation icons in chat"
         },
+        "mod-icon-purge-type": {
+            type: "select",
+            name: "Purge Icon Type",
+            desc: "Choose which icon to display to purge a user",
+            options: ["Cross", "Trash"]
+        },
         "mod-card-actions": {
             type: "checkbox",
             default: true,
@@ -38,5 +44,29 @@ export const Chat = {
             name: "User Name History",
             desc: "Show the user name history in the user card"
         }
+    },
+    "Chat Hightlights": {
+        "highlight-friends": {
+            type: "checkbox",
+            default: false,
+            name: "Highlight Friends",
+            desc: "Highlight when your friends message in chat with a purple background"
+        },
+        "highlight-vip": {
+            type: "checkbox",
+            default: false,
+            name: "Highlight VIPs",
+            desc: "Highlight when one of your VIPs message in chat with a green background"
+        },
+        "highlight-vip-list": {
+            type: "textarea",
+            height: 3,
+            name: "Highlight VIP List",
+            desc: "List of users that are considered VIPs. Seperate by comma (,)"
+        }
     }
+};
+
+export const Aliases = {
+    "Aliases" : {}
 };

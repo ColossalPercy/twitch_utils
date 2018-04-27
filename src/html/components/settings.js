@@ -1,4 +1,4 @@
-const gui = `
+export const gui = `
 <div class="tu-settings-gui tw-overflow-hidden tw-border-1 tw-absolute tw-c-background tw-elevation-4 tw-hide">
 	<div class="tu-settings-header tw-flex tw-theme--dark tw-justify-content-between tw-pd-1 tw-border-b">
 		<div class="tw-flex tw-flex-row tw-c-text">
@@ -42,17 +42,68 @@ export const tabContent = `
 	</div>
 </div>`;
 
+export const aliasAdd = `
+<button class="tw-button tw-mg-l-1 tu-settings-add-alias">
+	<span class="tw-button__text">Add Alias</span>
+</button>`;
+
 export function checkbox(name, label, desc, def) {
     let checkbox = `
 	<div class="tw-mg-b-1">
 		<div class="tw-checkbox tw-pd-1">
 			<input type="checkbox" class="tw-checkbox__input" id="${name}">
 			<label class="tw-checkbox__label" for="${name}">${label}</label>
-
 		</div>
 		<p class="tw-pd-l-3 tu-settings-desc">${desc}</p>
 	</div>`;
 	return checkbox;
+}
+
+export function textarea(name, label, desc) {
+    let textarea = `
+	<div class="tw-mg-b-1">
+		<div class="tw-flex tw-flex-row tw-pd-1">
+			<label class="tu-settings-label" for="${name}">${label}</label>
+			<input type="textarea" class="tw-textarea tw-textarea--noresize" id="${name}">
+		</div>
+		<p class="tw-pd-l-3 tu-settings-desc">${desc}</p>
+	</div>`;
+	return textarea;
+}
+
+export function select(name, label, desc, opt) {
+    let select = `
+	<div class="tw-mg-b-1">
+		<div class="tw-flex tw-flex-row tw-pd-1">
+			<label class="tu-settings-label" for="${name}">${label}</label>
+			<select class="tw-select tu-settings-select tu-settings-width" id="${name}">`;
+	opt.forEach(function(o){
+		select += `<option>${o}</option>`;
+	});
+	select += `</div>
+	<p class="tw-pd-l-3 tu-settings-desc">${desc}</p>
+	</div>`;
+	return select;
+}
+
+export function alias(name, alias){
+	let aliasH = `
+	<div class="tw-mg-b-1">
+		<div class="tw-flex tw-flex-row tw-pd-1">
+			<input type="textarea" class="tw-textarea tw-textarea--noresize tu-settings-width-alias tw-mg-r-1" id="tu-alias-n-${name}">
+			<input type="textarea" class="tw-textarea tw-textarea--noresize" id="tu-alias-a-${name}">
+			<button class="tw-button-icon" id="tu-alias-d-${name}">
+				<span class="tw-button-icon__icon">
+					<figure class="tw-svg">
+						<svg class="tw-svg__asset tw-svg__asset--close tw-svg__asset--inherit" width="16px" height="16px" version="1.1" viewBox="0 0 16 16" x="0px" y="0px">
+							<path d="M8 6.586L3.757 2.343 2.343 3.757 6.586 8l-4.243 4.243 1.414 1.414L8 9.414l4.243 4.243 1.414-1.414L9.414 8l4.243-4.243-1.414-1.414" fill-rule="evenodd"></path>
+						</svg>
+					</figure>
+				</span>
+			</button>
+		</div>
+	</div>`;
+	return aliasH;
 }
 
 export function section(name, n) {
@@ -66,8 +117,5 @@ export function section(name, n) {
 }
 
 export default {
-    gui,
-    tab,
-    tabContent,
-    checkbox
+    gui
 };

@@ -72,3 +72,19 @@
 .tu-settings-desc {
     color: #808080;
 }
+
+.tu-settings-label {
+    min-width: 12rem;
+    padding-top: .5rem;
+    padding-bottom: .5rem;
+}
+
+.tu-settings-width {
+    width: auto!important;
+    min-width: 20rem;
+}
+
+.tu-settings-width-alias {
+    width: auto!important;
+    min-width: 15rem;
+}

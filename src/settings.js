@@ -15,7 +15,7 @@ export default function() {
         if (tabContainer.children.length == 1) {
             mainContainer.insertAdjacentHTML('beforeend', components.tabContent);
             curTab.classList.add('tu-settings-tab-active');
-            render(structure[key]);
+            render(key, structure[key]);
         }
         let s = document.createElement('span');
         s.text = key;
@@ -29,23 +29,44 @@ export default function() {
         document.querySelector('.tu-settings-tab-' + key).classList.add('tu-settings-tab-active');
         mainContainer.children[0].remove();
         mainContainer.insertAdjacentHTML('beforeend', components.tabContent);
-        render(structure[key]);
+        render(key, structure[key]);
     }
 
-    function render(obj) {
+    function render(tab, obj) {
         let n = 1;
         let tabContent = mainContainer.children[0].children[0].children[0].children[0];
-        for (let section in obj) {
-            tabContent.insertAdjacentHTML('beforeend', components.section(section, n));
-            for (let setting in obj[section]) {
-                let s = obj[section][setting];
-                if (s.type == 'checkbox') {
-                    let checkbox = components.checkbox(setting, s.name, s.desc);
-                    tabContent.insertAdjacentHTML('beforeend', checkbox);
-                    document.getElementById(setting).checked = s.default;
-                }
+        console.log(tab);
+        if (tab == 'Aliases') {
+            let aliases = JSON.parse(localStorage.tmtAliases);
+            for (let name in aliases) {
+                console.log(name);
+                let alias = components.alias(name, aliases[name]);
+                tabContent.insertAdjacentHTML('beforeend', alias);
+                let n = document.getElementById('tu-alias-n-' + name);
+                n.value = name;
+                let a = document.getElementById('tu-alias-a-' + name);
+                a.value = aliases[name];
             }
-            n++;
+            tabContent.insertAdjacentHTML('beforeend', components.aliasAdd);
+        } else {
+            for (let section in obj) {
+                tabContent.insertAdjacentHTML('beforeend', components.section(section, n));
+                for (let setting in obj[section]) {
+                    let s = obj[section][setting];
+                    if (s.type == 'checkbox') {
+                        let checkbox = components.checkbox(setting, s.name, s.desc);
+                        tabContent.insertAdjacentHTML('beforeend', checkbox);
+                        document.getElementById(setting).checked = s.default;
+                    } else if (s.type == 'textarea') {
+                        let textarea = components.textarea(setting, s.name, s.desc);
+                        tabContent.insertAdjacentHTML('beforeend', textarea);
+                    } else if (s.type == 'select') {
+                        let select = components.select(setting, s.name, s.desc, s.options);
+                        tabContent.insertAdjacentHTML('beforeend', select);
+                    }
+                }
+                n++;
+            }
         }
     }
 }
