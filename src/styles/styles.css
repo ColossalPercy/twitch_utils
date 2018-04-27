@@ -10,6 +10,17 @@
     visibility: hidden!important;
 }
 
+.tu-name-history-button {
+    padding-top: 5px;
+    padding-left: 2px;
+    padding-right: 2px;
+}
+
+.tu-name-history-balloon {
+    left: 33%;
+    top: 80%;
+}
+
 .tu-settings-gui {
     width: 60vw;
     height: 65vh;
