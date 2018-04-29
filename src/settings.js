@@ -35,11 +35,10 @@ export default function() {
     function render(tab, obj) {
         let n = 1;
         let tabContent = mainContainer.children[0].children[0].children[0].children[0];
-        console.log(tab);
         if (tab == 'Aliases') {
+            tabContent.insertAdjacentHTML('beforeend', components.section("Aliases", n));
             let aliases = JSON.parse(localStorage.tmtAliases);
             for (let name in aliases) {
-                console.log(name);
                 let alias = components.alias(name, aliases[name]);
                 tabContent.insertAdjacentHTML('beforeend', alias);
                 let n = document.getElementById('tu-alias-n-' + name);

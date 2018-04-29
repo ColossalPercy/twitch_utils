@@ -51,7 +51,10 @@ let chatObserver = new MutationObserver(function(mutations) {
                 if (chatRoom.isCurrentUserModerator) {
                     if (addedNode.classList.contains('chat-line__message')) {
                         if (findReact(addedNode).memoizedProps.showModerationIcons === true) {
-                            addPurgeButton(addedNode);
+                            let message = findReact(addedNode);
+                            if (!(message.memoizedProps.message.hasOwnProperty('_ffz_checked'))) {
+                                addPurgeButton(addedNode);
+                            }
                         }
                     }
                     if (addedNode.classList.contains('viewer-card-layer__draggable')) {
