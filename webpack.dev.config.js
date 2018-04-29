@@ -18,7 +18,13 @@ module.exports = {
     },
     output: {
         path: path.resolve(__dirname, 'build'),
+        publicPath: '/build',
         filename: 'tu.dev.js'
     },
-    watch: true
+    watch: true,
+    devServer: {
+        contentBase: './',
+        inline: true,
+        port: 3000
+    }
 };
