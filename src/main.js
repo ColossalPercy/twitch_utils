@@ -438,7 +438,7 @@ let updateCardAge = function(data) {
 
 function dateDiff(a, b) {
     let diff = new Date(a.getTime() - b.getTime());
-    let d = a.getDate() - b.getDate();
+    let d = diff.getUTCDate() - 1;
     let y = diff.getUTCFullYear() - 1970;
     let m = diff.getUTCMonth() + y * 12;
 
@@ -456,6 +456,8 @@ function dateDiff(a, b) {
         return '1 month';
     } else if (d == 1) {
         return '1 day';
+    } else if (d == 0) {
+        return 'Today';
     } else {
         return d + ' days';
     }
