@@ -15,7 +15,7 @@
     "mod card"
   ],
   "scripts": {
-    "dev": "webpack-dev-server --config webpack.dev.config.js",
+    "start": "webpack-dev-server --config webpack.dev.config.js",
     "build": "webpack --config webpack.prod.config.js"
   },
   "devDependencies": {

@@ -69,19 +69,6 @@ let chatObserver = new MutationObserver(function(mutations) {
                         }
                     }
                 }
-                // All user actions
-                // opened viewer card
-                if (addedNode.classList.contains('viewer-card-layer__draggable')) {
-                    let check = setInterval(function() {
-                        if (document.querySelector('.viewer-card')) {
-                            clearInterval(check);
-                            let name = findReact(document.querySelector('.viewer-card-layer'), 2).memoizedProps.viewerCardOptions.targetLogin;
-                            addNameHistory();
-                            addAge();
-                            updateCardInfo(name);
-                        }
-                    }, 50);
-                }
                 // recieve new message
                 if (addedNode.classList.contains('chat-line__message')) {
                     let message = findReact(addedNode);
@@ -90,7 +77,7 @@ let chatObserver = new MutationObserver(function(mutations) {
                     if (localStorage.tmtHighlightFriend == 'true' && friendList.includes(from) && !(addedNode.classList.contains('ffz-mentioned'))) {
                         addedNode.classList.add('tu-highlight-friend');
                     }
-                    if (message.memoizedProps.currentUserLogin == 'Jackyy' && from == 'Jackyy') {
+                    if (message.memoizedProps.currentUserDisplayName == 'Jackyy' && from == 'Jackyy') {
                         let badge = addedNode.querySelector('[data-badge="turbo"]');
                         if (badge) {
                             badge.removeAttribute("data-badge");
@@ -146,6 +133,37 @@ let elLoader = new MutationObserver(function(mutations) {
             chatSendBtn.onclick = checkMessage;
             // get chat messages list
             chatList = document.querySelector('.chat-list__lines').SimpleBar.contentEl.children[0];
+            // hijack the viewer card
+            if (chatList.onclick == null) {
+                chatList.onclick = function(e) {
+                    let classes = e.target.classList;
+                    if (classes.contains('chat-author__display-name') || classes.contains('chat-author__intl-login') || classes.contains('chat-line__username')) {
+                        let props = findReact(e.target, 2).memoizedProps;
+                        let userData = props.userData || props.message.user;
+                        let check = setInterval(function() {
+                            if (document.querySelector('.viewer-card')) {
+                                clearInterval(check);
+                                let dn = document.querySelector('.viewer-card__display-name');
+                                let dataCont;
+                                if (dn) {
+                                    dataCont = dn.parentElement;
+                                    dataCont.removeChild(dn);
+                                } else {
+                                    let tuCard = document.querySelector('.tu-viewer-card');
+                                    dataCont = tuCard.parentElement;
+                                    dataCont.removeChild(tuCard);
+                                }
+                                dataCont.insertAdjacentHTML('beforeend', components.viewerCard.tuCard);
+                                let lk = document.querySelector('.tu-viewer-card-link');
+                                lk.href = '/' + userData.userLogin.toLowerCase();
+                                lk.innerHTML = userData.userDisplayName;
+                                document.querySelector('.tu-name-history-button').onclick = toggleVisibility;
+                                updateCardInfo(userData.userLogin);
+                            }
+                        }, 50);
+                    }
+                };
+            }
             // get online friend list
             onlineFriends = document.querySelector('.online-friends');
             if (!foundFriends && friendList.length === 0) {
@@ -246,9 +264,6 @@ function checkKey(e) {
     } else if (e.keyCode == '13' && inputSelector.value) {
         // enter key
         checkMessage();
-    } else if (e.keyCode == '9') {
-        // tab key
-        console.log('tab');
     }
 }
 
@@ -358,6 +373,8 @@ function checkMessage() {
                 ext = parts.splice(1).join(' ');
             }
             sendMessage('/timeout ' + ext);
+        } else {
+            sendMessage('/' + msg);
         }
     }
 }
@@ -402,27 +419,6 @@ function getJSON(url, callback) {
     xhr.send(null);
 }
 
-function addNameHistory() {
-    let tfr = document.createElement('div');
-    tfr.id = 'tu-name-container';
-    tfr.setAttribute('class', 'tw-flex tw-flex-row');
-    let dn = document.querySelector('.viewer-card__display-name');
-    dn.children[0].classList.add('tw-flex');
-    dn.classList.remove('tw-ellipsis');
-    dn.appendChild(tfr);
-    tfr.appendChild(dn.children[0]);
-    tfr.insertAdjacentHTML('beforeend', components.viewerCard.history);
-    document.querySelector('.tu-name-history-button').onclick = toggleVisibility;
-}
-
-function addAge() {
-    document.querySelector('.viewer-card__banner').classList.remove('tw-align-center');
-    let dn = document.querySelector('.viewer-card__display-name');
-    dn.classList.remove('tw-align-items-center', 'tw-mg-1');
-    dn.classList.add('tw-mg-l-1');
-    dn.insertAdjacentHTML('beforeend', components.viewerCard.placeHolder);
-}
-
 function updateCardInfo(name) {
     callUserApi(name, updateCardAge);
 }
@@ -433,10 +429,10 @@ let updateCardAge = function(data) {
     let d = new Date(date);
     let n = new Date(Date.now());
     let age = dateDiff(n, d);
-    let el = document.querySelector('.tu-channel-data');
+    let el = document.querySelector('.tu-channel-data-placeholder');
+    let tvc = document.querySelector('.tu-viewer-card');
     el.parentNode.removeChild(el);
-    let dn = document.querySelector('.viewer-card__display-name');
-    dn.insertAdjacentHTML('beforeend', components.viewerCard.age);
+    tvc.insertAdjacentHTML('beforeend', components.viewerCard.age);
     document.querySelector('.viewer-card__profile-age').innerHTML = age;
     document.querySelector('.tu-created-on').innerHTML = 'Created on: ' + Intl.DateTimeFormat().format(d);
     document.querySelector('.viewer-card__followers').innerHTML = data.followers;
