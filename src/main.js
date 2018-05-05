@@ -36,9 +36,9 @@ if (localStorage.tmtBlockedEmotes) {
 
 let blockedUsers = [];
 if (localStorage.twitchBlockList) {
-	blockedUsers = localStorage.twitchBlockList.split(',');
-	for (let i = 0; i < blockedUsers.length; i++) {
-            blockedUsers[i] = blockedUsers[i].toLowerCase();
+    blockedUsers = localStorage.twitchBlockList.split(',');
+    for (let i = 0; i < blockedUsers.length; i++) {
+        blockedUsers[i] = blockedUsers[i].toLowerCase();
     }
 }
 
@@ -70,27 +70,27 @@ let chatObserver = new MutationObserver(function(mutations) {
                     }
                 }
                 // All user actions
-				// opened viewer card
+                // opened viewer card
                 if (addedNode.classList.contains('viewer-card-layer__draggable')) {
-                    let name = findReact(document.querySelector('.viewer-card-layer'), 2).memoizedProps.viewerCardOptions.targetLogin;
                     let check = setInterval(function() {
                         if (document.querySelector('.viewer-card')) {
                             clearInterval(check);
+                            let name = findReact(document.querySelector('.viewer-card-layer'), 2).memoizedProps.viewerCardOptions.targetLogin;
                             addNameHistory();
                             addAge();
                             updateCardInfo(name);
                         }
                     }, 50);
                 }
-				// recieve new message
+                // recieve new message
                 if (addedNode.classList.contains('chat-line__message')) {
                     let message = findReact(addedNode);
                     let from = message.memoizedProps.message.user.userDisplayName;
-					// highlight friends
+                    // highlight friends
                     if (localStorage.tmtHighlightFriend == 'true' && friendList.includes(from) && !(addedNode.classList.contains('ffz-mentioned'))) {
                         addedNode.classList.add('tu-highlight-friend');
                     }
-					// block emotes
+                    // block emotes
                     let parts = message.memoizedProps.message.messageParts;
                     let imgs = addedNode.getElementsByTagName('img');
                     let emotes = [];
@@ -113,10 +113,10 @@ let chatObserver = new MutationObserver(function(mutations) {
                             emoteN++;
                         }
                     }
-					// block Users
-					if (blockedUsers.includes(from.toLowerCase())) {
-						chatList.removeChild(addedNode);
-					}
+                    // block Users
+                    if (blockedUsers.includes(from.toLowerCase())) {
+                        chatList.removeChild(addedNode);
+                    }
                 }
             }
         });
@@ -160,12 +160,12 @@ let elLoader = new MutationObserver(function(mutations) {
                 chatInputBtns.insertAdjacentHTML('beforeend', components.icons.settings);
                 document.querySelector('.tu-settings-button').onclick = toggleVisibility;
             }
-			// add twitch blocker
+            // add twitch blocker
             if (!(document.querySelector('.tu-block-button'))) {
                 chatInputBtns.insertAdjacentHTML('beforeend', components.icons.block);
                 document.querySelector('.tu-block-button').onclick = toggleVisibility;
-				document.querySelector('.tu-block-add-user').onclick = addBlockedUser;
-				blockedUsersList = document.querySelector('.tu-block-user-list');
+                document.querySelector('.tu-block-add-user').onclick = addBlockedUser;
+                blockedUsersList = document.querySelector('.tu-block-user-list');
                 blockedUsers.forEach(function(id) {
                     var user = `
             			<div class="tw-mg-t-1" >
@@ -401,6 +401,7 @@ function addNameHistory() {
     tfr.setAttribute('class', 'tw-flex tw-flex-row');
     let dn = document.querySelector('.viewer-card__display-name');
     dn.children[0].classList.add('tw-flex');
+    dn.classList.remove('tw-ellipsis');
     dn.appendChild(tfr);
     tfr.appendChild(dn.children[0]);
     tfr.insertAdjacentHTML('beforeend', components.viewerCard.history);
@@ -410,8 +411,9 @@ function addNameHistory() {
 function addAge() {
     document.querySelector('.viewer-card__banner').classList.remove('tw-align-center');
     let dn = document.querySelector('.viewer-card__display-name');
-    dn.classList.remove('tw-align-items-center');
-    dn.insertAdjacentHTML('beforeend', components.viewerCard.age);
+    dn.classList.remove('tw-align-items-center', 'tw-mg-1');
+    dn.classList.add('tw-mg-l-1');
+    dn.insertAdjacentHTML('beforeend', components.viewerCard.placeHolder);
 }
 
 function updateCardInfo(name) {
@@ -422,9 +424,42 @@ let updateCardAge = function(data) {
     let date = data.created_at;
     getNameHistory(data._id);
     let d = new Date(date);
-    let created = d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear();
-    document.querySelector('.viewer-card__profile-age').innerHTML = 'Created on: ' + created;
+    let n = new Date(Date.now());
+    let age = dateDiff(n, d);
+    let el = document.querySelector('.tu-channel-data');
+    el.parentNode.removeChild(el);
+    let dn = document.querySelector('.viewer-card__display-name');
+    dn.insertAdjacentHTML('beforeend', components.viewerCard.age);
+    document.querySelector('.viewer-card__profile-age').innerHTML = age;
+    document.querySelector('.tu-created-on').innerHTML = 'Created on: ' + Intl.DateTimeFormat().format(d);
+    document.querySelector('.viewer-card__followers').innerHTML = data.followers;
+    document.querySelector('.viewer-card__views').innerHTML = data.views;
 };
+
+function dateDiff(a, b) {
+    let diff = new Date(a.getTime() - b.getTime());
+    let d = a.getDate() - b.getDate();
+    let y = diff.getUTCFullYear() - 1970;
+    let m = diff.getUTCMonth() + y * 12;
+
+    if (y > 1 && m % (y * 12) == 0) {
+        return y + '.0 years';
+    } else if (y > 1) {
+        return (y + Math.round(((m - (y * 12)) / 12) * 10) / 10) + ' years';
+    } else if (y == 1 && m == 12) {
+        return '1.0 year';
+    } else if (y == 1 && m < 24) {
+        return (y + Math.round(((m - (y * 12)) / 12) * 10) / 10) + ' years';
+    } else if (m > 1) {
+        return m + ' months';
+    } else if (m == 1) {
+        return '1 month';
+    } else if (d == 1) {
+        return '1 day';
+    } else {
+        return d + ' days';
+    }
+}
 
 function getNameHistory(id) {
     let url = 'https://twitch-tools.rootonline.de/username_changelogs_search.php?q=' + id + '&format=json';
@@ -450,7 +485,7 @@ let updateNameHistory = function(data) {
 };
 
 function callUserApi(name, callback) {
-    let url = 'https://api.twitch.tv/kraken/users/' + name + '?client_id=5ojgte4x1dp72yumoc8fp9xp44nhdj';
+    let url = 'https://api.twitch.tv/kraken/channels/' + name + '?client_id=5ojgte4x1dp72yumoc8fp9xp44nhdj';
     let data = getJSON(url, callback);
     return data;
 }
@@ -465,19 +500,19 @@ function toggleVisibility() {
 }
 
 function addBlockedUser() {
-        var newUser = prompt("Add a new user to the block list:").toLowerCase();
-        if (newUser !== null) {
-            blockedUsers.push(newUser);
-            let addUser = '<div class="tw-mg-t-1"><button class="blocked-user-' + newUser + '">' + newUser + '</button></div>';
-			blockedUsersList.insertAdjacentHTML('beforeend', addUser);
-            document.querySelector('.blocked-user-' + newUser).onclick = removeBlockedUser;
-            localStorage.twitchBlockList = blockedUsers;
-            console.log('Added ' + newUser + ' to the block list.');
-        }
+    var newUser = prompt("Add a new user to the block list:").toLowerCase();
+    if (newUser !== null) {
+        blockedUsers.push(newUser);
+        let addUser = '<div class="tw-mg-t-1"><button class="blocked-user-' + newUser + '">' + newUser + '</button></div>';
+        blockedUsersList.insertAdjacentHTML('beforeend', addUser);
+        document.querySelector('.blocked-user-' + newUser).onclick = removeBlockedUser;
+        localStorage.twitchBlockList = blockedUsers;
+        console.log('Added ' + newUser + ' to the block list.');
     }
+}
 
 function removeBlockedUser(event) {
-	var removeID = event.target.innerHTML;
+    var removeID = event.target.innerHTML;
     var approved = confirm("Are you sure you wish to unblock " + removeID + "?");
 
     if (approved === true) {
