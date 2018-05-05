@@ -90,6 +90,11 @@ let chatObserver = new MutationObserver(function(mutations) {
                     if (localStorage.tmtHighlightFriend == 'true' && friendList.includes(from) && !(addedNode.classList.contains('ffz-mentioned'))) {
                         addedNode.classList.add('tu-highlight-friend');
                     }
+                    if (message.memoizedProps.currentUserLogin == 'Jackyy' && from == 'Jackyy') {
+                        let badge = addedNode.querySelector('[data-badge="turbo"]');
+                        badge.removeAttribute("data-badge");
+                        badge.setAttribute("data-badge", "premium");
+                    }
                     // block emotes
                     let parts = message.memoizedProps.message.messageParts;
                     let imgs = addedNode.getElementsByTagName('img');
