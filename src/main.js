@@ -95,7 +95,7 @@ let chatObserver = new MutationObserver(function(mutations) {
                     }
                     let emoteN = 0;
                     for (let i = 0; i < parts.length; i++) {
-                        if (parts[i].type == 3) {
+                        if (parts[i].type == 4) {
                             if (blockedEmotes.includes(parts[i].content.alt)) {
                                 let n = parts[i].content.images.sources;
                                 n['1x'] = 'https://raw.githubusercontent.com/ColossalPercy/twitch_mod_tools/master/assets/blank_28x.png';
