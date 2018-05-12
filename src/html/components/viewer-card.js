@@ -58,7 +58,7 @@ const tuCard = `
 					</div>
 					<div class="tw-border-t tw-border-r tw-border-b tw-border-l tw-elevation-1 tw-border-radius-small tw-c-background">
 						<div class="tw-c-text tw-flex tw-flex-wrap tw-pd-1">
-							<div class="tu-name-history-list">
+							<div class="tu-name-history-list tw-align-left">
 								<h5>Name History</h5>
 								<p class="tw-pd-l-1">loading...</p>
 							</div>
