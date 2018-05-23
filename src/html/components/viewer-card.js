@@ -35,7 +35,7 @@ const age = `
 </div>`;
 
 const tuCard = `
-<div class="tu-viewer-card tw-mg-l-1">
+<div class="tu-viewer-card tw-mg-l-1 tw-align-left">
 	<div class="tw-flex tw-flex-row">
 		<h4 class="tw-c-text-overlay tw-flex">
 			<a class="tu-viewer-card-link tw-link tw-link--hover-underline-none tw-link--inherit" target="_blank" href=""></a>
@@ -58,7 +58,7 @@ const tuCard = `
 					</div>
 					<div class="tw-border-t tw-border-r tw-border-b tw-border-l tw-elevation-1 tw-border-radius-small tw-c-background">
 						<div class="tw-c-text tw-flex tw-flex-wrap tw-pd-1">
-							<div class="tu-name-history-list tw-align-left">
+							<div class="tu-name-history-list">
 								<h5>Name History</h5>
 								<p class="tw-pd-l-1">loading...</p>
 							</div>

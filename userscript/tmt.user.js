@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Twith Utils
+// @name         Twitch Utils
 // @namespace    http://jacksp.co.uk
 // @version      0.1
 // @description  Add useful utilities to Twitch.tv!
