@@ -112,15 +112,6 @@ let chatObserver = new MutationObserver(function (mutations) {
 					if (blockedUsers.includes(from.toLowerCase())) {
 						chatList.removeChild(addedNode);
 					}
-
-					let rawMessage = message.memoizedProps.message.message.toLowerCase();
-					for (let i = 0; i < highlightWords.length; i++) {
-						let key = highlightWords[i].toLowerCase();
-						if (rawMessage.includes(key)) {
-							addedNode.classList.add('ffz-mentioned');
-						}
-
-					}
 				}
 			}
 		});
@@ -144,7 +135,7 @@ let elLoader = new MutationObserver(function (mutations) {
 			// get chat messages list
 			chatList = document.querySelector('.chat-list__lines').SimpleBar.contentEl.children[0];
 			// hijack the viewer card
-			if (chatList.onclick == null) {
+			if (chatList.onclick == null && !window.ffz) {
 				chatList.onclick = function (e) {
 					let classes = e.target.classList;
 					if (classes.contains('chat-author__display-name') || classes.contains('chat-author__intl-login') || classes.contains('chat-line__username')) {
@@ -293,7 +284,7 @@ function checkMessage() {
 		if (twitchCommands.indexOf(command) > -1) {
 			return;
 		}
-		findReact(inputSelector, 2).memoizedProps.onValueUpdate('');
+		findReact(inputSelector, 3).memoizedProps.onValueUpdate('');
 		inputSelector.value = '';
 		// check if tu command or user alias
 		if (command === 'alias') {
@@ -414,7 +405,7 @@ function getFriendList() {
 
 function changeMessage() {
 	let newMessage = messageHistory[currMessage];
-	findReact(inputSelector, 2).memoizedProps.onValueUpdate(newMessage);
+	findReact(inputSelector, 3).memoizedProps.onValueUpdate(newMessage);
 	inputSelector.value = newMessage;
 }
 
