@@ -1,7 +1,5 @@
 export const Home = {
-    "These are test settings and currently do not work!": {},
-    "Use the tabs above to change settings": {},
-    "DRAGGING CURRENTLY DISABLED": {}
+    "These are test settings and currently do not work!": {}
 };
 
 export const Chat = {

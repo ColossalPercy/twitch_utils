@@ -56,8 +56,8 @@ const tuCard = `
 					<div class="tw-balloon__tail tw-overflow-hidden tw-absolute" style="height: 6px">
 						<div class="tw-balloon__tail-symbol tw-border-t tw-border-r tw-border-b tw-border-l tw-border-radius-small tw-c-background tw-absolute"></div>
 					</div>
-					<div class="tw-border-t tw-border-r tw-border-b tw-border-l tw-elevation-1 tw-border-radius-small tw-c-background">
-						<div class="tw-c-text tw-flex tw-flex-wrap tw-pd-1">
+					<div class="tw-border-t tw-border-r tw-border-b tw-border-l tw-elevation-1 tw-border-radius-small tw-c-background-base">
+						<div class="tw-c-text-alt-2 tw-flex tw-flex-wrap tw-pd-1">
 							<div class="tu-name-history-list">
 								<h5>Name History</h5>
 								<p class="tw-pd-l-1">loading...</p>

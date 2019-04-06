@@ -61,7 +61,7 @@ let chatObserver = new MutationObserver(function (mutations) {
 						if (findReact(addedNode).memoizedProps.showModerationIcons === true) {
 							let message = findReact(addedNode);
 							if (!(message.memoizedProps.message.hasOwnProperty('_ffz_checked'))) {
-								addPurgeButton(addedNode);
+								// addPurgeButton(addedNode);
 							}
 						}
 					}
@@ -167,9 +167,9 @@ let elLoader = new MutationObserver(function (mutations) {
 			}
 			// get online friend list
 			onlineFriends = document.querySelector('.online-friends');
-			if (!foundFriends && friendList.length === 0) {
-				getFriendList();
-			}
+			// if (!foundFriends && friendList.length === 0) {
+			// 	getFriendList();
+			// }
 			// get top nav bar
 			topNav = document.querySelector('.top-nav');
 			// get main page

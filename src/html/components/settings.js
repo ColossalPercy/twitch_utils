@@ -24,7 +24,7 @@ export const gui = `
 	</div>
 	<ul class="tu-settings-tab-container tw-flex tw-c-background-alt-2">
 	</ul>
-	<div class="tu-settings-main">
+	<div class="tu-settings-main tw-c-background-base">
 	</div>
 </div>`;
 
